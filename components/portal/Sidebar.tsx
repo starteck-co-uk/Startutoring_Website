@@ -8,7 +8,7 @@ export interface PortalUser {
   id: string;
   name: string;
   email: string;
-  role: 'student' | 'parent';
+  role: 'student' | 'parent' | 'admin';
   grade?: string;
   avatar?: string;
 }

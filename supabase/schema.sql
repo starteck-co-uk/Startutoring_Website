@@ -11,7 +11,7 @@ create table if not exists public.students (
   name text not null,
   email text not null unique,
   pin text not null,
-  role text not null check (role in ('student', 'parent')),
+  role text not null check (role in ('student', 'parent', 'admin')),
   grade text,
   parent_id uuid references public.students(id) on delete set null,
   avatar text,
@@ -63,11 +63,26 @@ create table if not exists public.contacts (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.ai_settings (
+  id text primary key default 'global',
+  provider text not null default 'claude',
+  claude_key text default '',
+  openai_key text default '',
+  gemini_key text default '',
+  copilot_key text default '',
+  updated_at timestamptz not null default now()
+);
+
 -- ========== ROW LEVEL SECURITY ==========
 alter table public.students enable row level security;
 alter table public.quiz_results enable row level security;
 alter table public.assessments enable row level security;
 alter table public.contacts enable row level security;
+alter table public.ai_settings enable row level security;
+
+-- ai_settings: only service role should read/write (API routes use admin client)
+drop policy if exists "ai_settings all" on public.ai_settings;
+create policy "ai_settings all" on public.ai_settings using (true) with check (true);
 
 -- students: anon can read (needed for demo login); writes only via service role
 drop policy if exists "students read" on public.students;
@@ -94,7 +109,8 @@ insert into public.students (id, name, email, pin, role, grade, avatar)
 values
   ('11111111-1111-1111-1111-111111111111', 'Amara Patel',  'amara@test.com',  '1234', 'student', 'Year 10 — GCSE', 'A'),
   ('22222222-2222-2222-2222-222222222222', 'Oliver Hughes','oliver@test.com', '1234', 'student', 'Year 6 — 11+',   'O'),
-  ('33333333-3333-3333-3333-333333333333', 'Sarah Patel',  'parent@test.com', '1234', 'parent',  'Parent',         'S')
+  ('33333333-3333-3333-3333-333333333333', 'Sarah Patel',  'parent@test.com', '1234', 'parent',  'Parent',         'S'),
+  ('44444444-4444-4444-4444-444444444444', 'Star Admin',   'admin@startutoring.uk', '0000', 'admin', 'Administrator', '★')
 on conflict (email) do nothing;
 
 -- Link Amara to Sarah (parent)
