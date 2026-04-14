@@ -35,7 +35,11 @@ export default function PortalLoginPage() {
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Login failed');
       localStorage.setItem('star_user', JSON.stringify(j.user));
-      router.push('/portal/dashboard');
+      if (j.user.role === 'admin') {
+        router.push('/portal/admin');
+      } else {
+        router.push('/portal/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
@@ -125,18 +129,23 @@ export default function PortalLoginPage() {
             </p>
             <div className="space-y-2 text-xs">
               {[
-                ['amara@test.com', 'Student'],
-                ['oliver@test.com', 'Student'],
-                ['parent@test.com', 'Parent']
-              ].map(([e, r]) => (
+                ['amara@test.com', '1234', 'Student'],
+                ['oliver@test.com', '1234', 'Student'],
+                ['parent@test.com', '1234', 'Parent'],
+                ['admin@startutoring.uk', '0000', 'Admin']
+              ].map(([e, p, r]) => (
                 <button
                   key={e}
                   type="button"
-                  onClick={() => fillDemo(e)}
-                  className="w-full flex justify-between items-center px-3 py-2 rounded-lg bg-white/5 border border-white/5 hover:border-gold/30 transition"
+                  onClick={() => { setEmail(e); setPin(p); }}
+                  className={`w-full flex justify-between items-center px-3 py-2 rounded-lg border transition ${
+                    r === 'Admin'
+                      ? 'bg-gold-dim border-gold/30 hover:border-gold/60'
+                      : 'bg-white/5 border-white/5 hover:border-gold/30'
+                  }`}
                 >
                   <span className="text-ink">{e}</span>
-                  <span className="text-ink-muted">PIN: 1234 • {r}</span>
+                  <span className="text-ink-muted">PIN: {p} • {r}</span>
                 </button>
               ))}
             </div>
