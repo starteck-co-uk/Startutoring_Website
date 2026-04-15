@@ -73,12 +73,92 @@ create table if not exists public.ai_settings (
   updated_at timestamptz not null default now()
 );
 
+-- Syllabi — one per subject+level, stores syllabus text content
+create table if not exists public.syllabi (
+  id uuid primary key default gen_random_uuid(),
+  subject text not null,
+  level text not null,
+  title text not null,
+  content text not null,
+  file_name text,
+  file_size int,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(subject, level)
+);
+
+-- Admin-created quizzes with lifecycle states
+create table if not exists public.quizzes (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  subject text not null,
+  level text not null,
+  topic text,
+  status text not null default 'draft' check (status in ('draft', 'published', 'closed')),
+  question_count int not null default 0,
+  created_by uuid references public.students(id),
+  published_at timestamptz,
+  closed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists quizzes_level_status_idx on public.quizzes (level, status);
+
+-- Individual questions belonging to a quiz
+create table if not exists public.quiz_questions (
+  id uuid primary key default gen_random_uuid(),
+  quiz_id uuid not null references public.quizzes(id) on delete cascade,
+  question_order int not null,
+  text text not null,
+  options jsonb not null,
+  correct int not null,
+  explanation text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists quiz_questions_quiz_idx on public.quiz_questions (quiz_id, question_order);
+
+-- Student attempts at admin-published quizzes
+create table if not exists public.quiz_attempts (
+  id uuid primary key default gen_random_uuid(),
+  quiz_id uuid not null references public.quizzes(id) on delete cascade,
+  student_id uuid not null references public.students(id) on delete cascade,
+  answers jsonb not null default '[]',
+  score int,
+  total int,
+  percentage numeric generated always as (
+    case when total > 0 then (score::numeric / total::numeric) * 100 else 0 end
+  ) stored,
+  graded boolean not null default false,
+  time_taken_secs int not null default 0,
+  started_at timestamptz not null default now(),
+  submitted_at timestamptz,
+  unique(quiz_id, student_id)
+);
+create index if not exists quiz_attempts_student_idx on public.quiz_attempts (student_id, submitted_at desc);
+
 -- ========== ROW LEVEL SECURITY ==========
 alter table public.students enable row level security;
 alter table public.quiz_results enable row level security;
 alter table public.assessments enable row level security;
 alter table public.contacts enable row level security;
 alter table public.ai_settings enable row level security;
+
+alter table public.syllabi enable row level security;
+alter table public.quizzes enable row level security;
+alter table public.quiz_questions enable row level security;
+alter table public.quiz_attempts enable row level security;
+
+drop policy if exists "syllabi all" on public.syllabi;
+create policy "syllabi all" on public.syllabi using (true) with check (true);
+
+drop policy if exists "quizzes all" on public.quizzes;
+create policy "quizzes all" on public.quizzes using (true) with check (true);
+
+drop policy if exists "quiz_questions all" on public.quiz_questions;
+create policy "quiz_questions all" on public.quiz_questions using (true) with check (true);
+
+drop policy if exists "quiz_attempts all" on public.quiz_attempts;
+create policy "quiz_attempts all" on public.quiz_attempts using (true) with check (true);
 
 -- ai_settings: only service role should read/write (API routes use admin client)
 drop policy if exists "ai_settings all" on public.ai_settings;

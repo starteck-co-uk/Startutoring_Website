@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import GlassCard from '@/components/GlassCard';
+import SyllabiTab from '@/components/admin/SyllabiTab';
+import QuizzesTab from '@/components/admin/QuizzesTab';
 
-type Tab = 'overview' | 'assessments' | 'contacts' | 'students' | 'settings';
+type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'students' | 'settings';
 
 interface AdminUser {
   id: string;
@@ -51,6 +53,8 @@ export default function AdminDashboard() {
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'syllabi', label: 'Syllabi', icon: '📚' },
+    { id: 'quizzes', label: 'Quizzes', icon: '📝' },
     { id: 'assessments', label: 'Assessments', icon: '📋' },
     { id: 'contacts', label: 'Messages', icon: '✉' },
     { id: 'students', label: 'Students', icon: '🎓' },
@@ -112,6 +116,8 @@ export default function AdminDashboard() {
         ) : (
           <>
             {tab === 'overview' && <OverviewTab data={data} />}
+            {tab === 'syllabi' && <SyllabiTab />}
+            {tab === 'quizzes' && <QuizzesTab />}
             {tab === 'assessments' && <AssessmentsTab data={data} />}
             {tab === 'contacts' && <ContactsTab data={data} />}
             {tab === 'students' && <StudentsTab data={data} />}
