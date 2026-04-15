@@ -6,6 +6,7 @@ import GlassCard from '@/components/GlassCard';
 import QuizRunner from '@/components/portal/QuizRunner';
 import QuizResults from '@/components/portal/QuizResults';
 import PdfGradeResults from '@/components/portal/PdfGradeResults';
+import AssignedQuizList from '@/components/portal/AssignedQuizList';
 import type { Question, Subject, Level } from '@/lib/types';
 
 const SUBJECTS: {
@@ -36,7 +37,7 @@ const SUBJECTS: {
 
 const LEVELS: Level[] = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
 
-type Phase = 'idle' | 'loading' | 'quiz' | 'results' | 'pdf-grading' | 'pdf-results';
+type Phase = 'idle' | 'loading' | 'quiz' | 'results' | 'pdf-grading' | 'pdf-results' | 'assigned-quiz' | 'assigned-results';
 
 export default function DashboardPage() {
   const user = usePortalUser();
@@ -56,6 +57,9 @@ export default function DashboardPage() {
   const [pdfGrading, setPdfGrading] = useState<any>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [assignedQuizId, setAssignedQuizId] = useState<string | null>(null);
+  const [assignedQuestions, setAssignedQuestions] = useState<Array<{ id: string; question_order: number; text: string; options: string[] }>>([]);
+  const [assignedResult, setAssignedResult] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -161,6 +165,67 @@ export default function DashboardPage() {
     }
   };
 
+  // Extract student level from grade string like "Year 10 — GCSE"
+  const studentLevel = user?.grade?.includes('—')
+    ? user.grade.split('—')[1]?.trim()
+    : user?.grade?.split(' ').pop() || '';
+
+  const startAssignedQuiz = async (quizId: string, quizTitle: string) => {
+    setAssignedQuizId(quizId);
+    setTitle(quizTitle);
+    setPhase('loading');
+    try {
+      const r = await fetch(`/api/student/quizzes/${quizId}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      setAssignedQuestions(j.questions || []);
+      setPhase('assigned-quiz');
+    } catch {
+      setPhase('idle');
+    }
+  };
+
+  const onAssignedComplete = async (r: { score: number; total: number; timeTakenSecs: number; answers: any[] }) => {
+    if (!user || !assignedQuizId) return;
+    setPhase('loading');
+    try {
+      const submitR = await fetch(`/api/student/quizzes/${assignedQuizId}/submit`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          student_id: user.id,
+          answers: r.answers.map((a: any) => ({ question_id: a.id, selected: a.selected })),
+          time_taken_secs: r.timeTakenSecs
+        })
+      });
+      const j = await submitR.json();
+
+      // Fetch full results with correct answers
+      const resultsR = await fetch(`/api/student/quizzes/${assignedQuizId}/results?student_id=${user.id}`);
+      const resultsJ = await resultsR.json();
+      setAssignedResult(resultsJ);
+      setPhase('assigned-results');
+    } catch {
+      setPhase('idle');
+    }
+  };
+
+  const viewAssignedResults = async (quizId: string) => {
+    if (!user) return;
+    setAssignedQuizId(quizId);
+    setPhase('loading');
+    try {
+      const r = await fetch(`/api/student/quizzes/${quizId}/results?student_id=${user.id}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      setTitle(j.quiz?.title || 'Quiz Results');
+      setAssignedResult(j);
+      setPhase('assigned-results');
+    } catch {
+      setPhase('idle');
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -245,6 +310,70 @@ export default function DashboardPage() {
     );
   }
 
+  if (phase === 'assigned-quiz' && assignedQuestions.length > 0) {
+    // Convert assigned questions (no correct/explanation) to QuizRunner format
+    const runnerQuestions: Question[] = assignedQuestions.map((q) => ({
+      text: q.text,
+      options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+      correct: -1, // hidden
+      explanation: ''
+    }));
+
+    return (
+      <QuizRunner
+        title={title}
+        subject=""
+        level=""
+        questions={runnerQuestions}
+        onExit={() => setPhase('idle')}
+        onComplete={(r) => {
+          // Attach question IDs to answers for submission
+          const answersWithIds = r!.answers.map((a, i) => ({
+            ...a,
+            id: assignedQuestions[i]?.id
+          }));
+          onAssignedComplete({ ...r!, answers: answersWithIds });
+        }}
+      />
+    );
+  }
+
+  if (phase === 'assigned-results' && assignedResult) {
+    const { attempt, questions: fullQuestions } = assignedResult;
+    const answerMap = new Map((attempt.answers || []).map((a: any) => [a.question_id, a.selected]));
+    const reviewAnswers = (fullQuestions || []).map((q: any) => ({
+      text: q.text,
+      options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+      correct: q.correct,
+      explanation: q.explanation,
+      selected: answerMap.get(q.id) ?? null
+    }));
+
+    return (
+      <QuizResults
+        title={assignedResult.quiz?.title || title}
+        subject={assignedResult.quiz?.subject || ''}
+        level={assignedResult.quiz?.level || ''}
+        score={attempt.score || 0}
+        total={attempt.total || 0}
+        timeTakenSecs={attempt.time_taken_secs || 0}
+        answers={reviewAnswers}
+        saving={false}
+        onSave={() => {
+          setPhase('idle');
+          setAssignedResult(null);
+          // refresh stats
+          if (user) {
+            fetch(`/api/student-stats?id=${user.id}`)
+              .then((r) => r.json())
+              .then(setStats)
+              .catch(() => {});
+          }
+        }}
+      />
+    );
+  }
+
   if (phase === 'loading') {
     return (
       <>
@@ -297,6 +426,14 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
+
+          {/* Assigned quizzes from admin */}
+          <AssignedQuizList
+            studentId={user.id}
+            level={studentLevel}
+            onTakeQuiz={startAssignedQuiz}
+            onViewResults={viewAssignedResults}
+          />
 
           {/* Hidden file input for PDF uploads */}
           <input
