@@ -103,23 +103,24 @@ h6 {
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
+  filter: blur(60px);
+  opacity: 0.3;
   animation: meshFloat 22s ease-in-out infinite;
   will-change: transform;
+  contain: strict;
 }
 .blob-gold {
   top: -10%;
   left: -5%;
-  width: 520px;
-  height: 520px;
+  width: 400px;
+  height: 400px;
   background: radial-gradient(circle, #f5b72f 0%, transparent 70%);
 }
 .blob-blue {
   top: 30%;
   right: -10%;
-  width: 600px;
-  height: 600px;
+  width: 450px;
+  height: 450px;
   background: radial-gradient(circle, #6366f1 0%, transparent 70%);
   animation-duration: 25s;
   animation-delay: -4s;
@@ -127,8 +128,8 @@ h6 {
 .blob-pink {
   bottom: -15%;
   left: 30%;
-  width: 500px;
-  height: 500px;
+  width: 380px;
+  height: 380px;
   background: radial-gradient(circle, #ec4899 0%, transparent 70%);
   animation-duration: 18s;
   animation-delay: -8s;
@@ -170,7 +171,23 @@ h6 {
   font-size: 14px;
   animation: starDrift 15s linear infinite;
   pointer-events: none;
-  text-shadow: 0 0 10px rgba(245, 183, 47, 0.6);
+  text-shadow: 0 0 8px rgba(245, 183, 47, 0.4);
+  will-change: transform, opacity;
+  contain: strict;
+}
+
+/* Disable heavy animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .blob,
+  .star-particle {
+    animation: none !important;
+  }
+  .star-particle {
+    display: none;
+  }
+  .blob {
+    opacity: 0.2;
+  }
 }
 
 /* ========== Glass ========== */
