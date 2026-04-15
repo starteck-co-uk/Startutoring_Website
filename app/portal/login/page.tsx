@@ -54,7 +54,7 @@ export default function PortalLoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center px-5 relative overflow-hidden py-12">
-      <StarField count={18} />
+      <StarField count={10} />
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <div

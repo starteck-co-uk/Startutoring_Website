@@ -12,7 +12,7 @@ export default function HomePage() {
       <main className="pt-24">
         {/* ============== HERO ============== */}
         <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-5">
-          <StarField count={15} />
+          <StarField count={8} />
           <div className="container-xl relative z-10 text-center">
             <Reveal>
               <span className="eyebrow">★ Trusted in Stretford for 10+ Years</span>

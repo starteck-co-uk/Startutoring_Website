@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Sidebar, { usePortalUser } from '@/components/portal/Sidebar';
 import GlassCard from '@/components/GlassCard';
 import QuizRunner from '@/components/portal/QuizRunner';
 import QuizResults from '@/components/portal/QuizResults';
+import PdfGradeResults from '@/components/portal/PdfGradeResults';
 import type { Question, Subject, Level } from '@/lib/types';
 
 const SUBJECTS: {
@@ -35,7 +36,7 @@ const SUBJECTS: {
 
 const LEVELS: Level[] = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
 
-type Phase = 'idle' | 'loading' | 'quiz' | 'results';
+type Phase = 'idle' | 'loading' | 'quiz' | 'results' | 'pdf-grading' | 'pdf-results';
 
 export default function DashboardPage() {
   const user = usePortalUser();
@@ -52,6 +53,9 @@ export default function DashboardPage() {
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<any>(null);
+  const [pdfGrading, setPdfGrading] = useState<any>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -114,6 +118,49 @@ export default function DashboardPage() {
       .catch(() => {});
   };
 
+  const startPdfUpload = (subject: string, level: string) => {
+    setCurrentSubject(subject);
+    setCurrentLevel(level);
+    setPdfError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handlePdfFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    if (file.type !== 'application/pdf') {
+      setPdfError('Please upload a PDF file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPdfError('File too large. Maximum size is 10MB.');
+      return;
+    }
+
+    setPhase('pdf-grading');
+    setTitle(`${currentSubject} — ${currentLevel} (PDF)`);
+    setPdfError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('subject', currentSubject);
+      formData.append('level', currentLevel);
+
+      const r = await fetch('/api/grade-pdf', { method: 'POST', body: formData });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Grading failed');
+
+      setPdfGrading(j.grading);
+      setPhase('pdf-results');
+    } catch (err: any) {
+      setPdfError(err.message || 'Failed to grade PDF.');
+      setPhase('idle');
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -148,6 +195,53 @@ export default function DashboardPage() {
         saving={saving}
         onSave={onSave}
       />
+    );
+  }
+
+  if (phase === 'pdf-results' && pdfGrading) {
+    return (
+      <PdfGradeResults
+        title={title}
+        subject={currentSubject}
+        level={currentLevel}
+        grading={pdfGrading}
+        onDone={() => {
+          setPhase('idle');
+          setPdfGrading(null);
+        }}
+      />
+    );
+  }
+
+  if (phase === 'pdf-grading') {
+    return (
+      <>
+        <Sidebar user={user} />
+        <main className="md:pl-[72px] min-h-screen flex items-center justify-center px-5">
+          <div className="text-center">
+            <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl animate-pulseGold"
+              style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}
+            >
+              ★
+            </div>
+            <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">
+              Grading your work...
+            </h2>
+            <p className="text-ink-soft text-sm mt-2">
+              AI is analysing your {currentLevel} {currentSubject} submission — checking method, steps, and answers
+            </p>
+            <div className="mt-6 flex justify-center gap-1">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-gold animate-pulse"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
+              ))}
+            </div>
+          </div>
+        </main>
+      </>
     );
   }
 
@@ -199,10 +293,25 @@ export default function DashboardPage() {
                 Take a Quiz
               </h1>
               <p className="text-ink-soft mt-2">
-                AI generates fresh questions every time — never the same quiz twice.
+                AI generates fresh questions every time — or upload your work as a PDF for detailed grading.
               </p>
             </div>
           </div>
+
+          {/* Hidden file input for PDF uploads */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={handlePdfFile}
+          />
+
+          {pdfError && (
+            <div className="mb-6 p-4 rounded-xl border border-red-400/30 bg-red-400/10 text-red-300 text-sm">
+              {pdfError}
+            </div>
+          )}
 
           <div className="space-y-6">
             {SUBJECTS.map((s) => {
@@ -233,16 +342,33 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {LEVELS.map((l) => (
-                      <button
-                        key={l}
-                        onClick={() => startQuiz(s.name, l)}
-                        className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm text-ink-soft hover:border-gold/50 hover:bg-gold-dim hover:text-gold-light transition-all"
-                      >
-                        {l}
-                      </button>
-                    ))}
+                  <div className="mt-6">
+                    <p className="text-xs text-ink-muted uppercase tracking-widest mb-2">Take a Quiz</p>
+                    <div className="flex flex-wrap gap-2">
+                      {LEVELS.map((l) => (
+                        <button
+                          key={l}
+                          onClick={() => startQuiz(s.name, l)}
+                          className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm text-ink-soft hover:border-gold/50 hover:bg-gold-dim hover:text-gold-light transition-all"
+                        >
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-xs text-ink-muted uppercase tracking-widest mb-2">Upload Work for Grading</p>
+                    <div className="flex flex-wrap gap-2">
+                      {LEVELS.map((l) => (
+                        <button
+                          key={`pdf-${l}`}
+                          onClick={() => startPdfUpload(s.name, l)}
+                          className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm text-ink-soft hover:border-cyan-400/50 hover:bg-cyan-400/10 hover:text-cyan-300 transition-all flex items-center gap-1.5"
+                        >
+                          <span className="text-xs">PDF</span> {l}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </GlassCard>
               );
