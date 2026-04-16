@@ -6,6 +6,7 @@ import Link from 'next/link';
 import GlassCard from '@/components/GlassCard';
 import SyllabiTab from '@/components/admin/SyllabiTab';
 import QuizzesTab from '@/components/admin/QuizzesTab';
+import StudentsAdminTab from '@/components/admin/StudentsAdminTab';
 
 type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'students' | 'settings';
 
@@ -35,7 +36,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    if (tab === 'settings') { setLoading(false); return; }
+    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'students') {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetch(`/api/admin?section=${tab}`)
       .then((r) => r.json())
@@ -120,7 +124,7 @@ export default function AdminDashboard() {
             {tab === 'quizzes' && <QuizzesTab />}
             {tab === 'assessments' && <AssessmentsTab data={data} />}
             {tab === 'contacts' && <ContactsTab data={data} />}
-            {tab === 'students' && <StudentsTab data={data} />}
+            {tab === 'students' && <StudentsAdminTab />}
             {tab === 'settings' && <SettingsTab />}
           </>
         )}
@@ -350,87 +354,6 @@ function ContactsTab({ data }: { data: any }) {
               </div>
             </GlassCard>
           ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ==================== STUDENTS ==================== */
-function StudentsTab({ data }: { data: any }) {
-  const students = data?.students || [];
-  const quizzes = data?.quizzes || [];
-
-  const getStudentStats = (id: string) => {
-    const sq = quizzes.filter((q: any) => q.student_id === id);
-    const count = sq.length;
-    const avg = count > 0 ? sq.reduce((a: number, q: any) => a + (q.percentage || (q.score / q.total) * 100), 0) / count : 0;
-    return { count, avg: Math.round(avg) };
-  };
-
-  return (
-    <div>
-      <h2 className="font-serif text-3xl font-semibold text-gradient mb-6">
-        Students & Parents <span className="text-lg text-ink-muted">({students.length})</span>
-      </h2>
-      {students.length === 0 ? (
-        <GlassCard className="!p-10 text-center" hover={false}>
-          <p className="text-ink-muted">No students registered.</p>
-        </GlassCard>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {students.map((s: any) => {
-            const st = getStudentStats(s.id);
-            return (
-              <GlassCard key={s.id} className="!p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg"
-                    style={{
-                      background: s.role === 'parent'
-                        ? 'linear-gradient(135deg, #a78bfa, #6366f1)'
-                        : 'linear-gradient(135deg, #ffd166, #f5b72f)',
-                      color: '#1a1304'
-                    }}
-                  >
-                    {(s.avatar || s.name?.[0] || '?')}
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-lg font-semibold">{s.name}</h3>
-                    <p className="text-xs text-ink-muted">{s.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-semibold ${
-                    s.role === 'student'
-                      ? 'bg-gold-dim border border-gold/30 text-gold-light'
-                      : 'bg-purple-400/10 border border-purple-400/30 text-purple-300'
-                  }`}>
-                    {s.role}
-                  </span>
-                  {s.grade && (
-                    <span className="text-xs text-ink-muted">{s.grade}</span>
-                  )}
-                </div>
-                {s.role === 'student' && (
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                    <div className="p-3 rounded-xl bg-white/3 border border-white/5 text-center">
-                      <p className="text-xs text-ink-muted">Quizzes</p>
-                      <p className="font-serif text-xl font-semibold text-gold">{st.count}</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-white/3 border border-white/5 text-center">
-                      <p className="text-xs text-ink-muted">Avg Score</p>
-                      <p className="font-serif text-xl font-semibold" style={{
-                        color: st.avg >= 75 ? '#34d399' : st.avg >= 50 ? '#fbbf24' : st.count > 0 ? '#f87171' : '#5a6478'
-                      }}>
-                        {st.count > 0 ? `${st.avg}%` : '—'}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </GlassCard>
-            );
-          })}
         </div>
       )}
     </div>
