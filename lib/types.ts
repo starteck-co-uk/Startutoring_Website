@@ -28,6 +28,16 @@ export interface Student {
   grade?: string;
   parent_id?: string;
   avatar?: string;
+  phone?: string;
+  school_name?: string;
+  subjects?: string[];
+  strengths?: string;
+  areas_to_improve?: string;
+  medical_notes?: string;
+  admin_notes?: string;
+  status?: 'active' | 'inactive' | 'paused';
+  enrollment_date?: string;
+  created_at?: string;
 }
 
 export type Subject = 'Maths' | 'Science' | 'English';

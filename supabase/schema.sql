@@ -15,6 +15,15 @@ create table if not exists public.students (
   grade text,
   parent_id uuid references public.students(id) on delete set null,
   avatar text,
+  phone text,
+  school_name text,
+  subjects text[] default '{}',
+  strengths text,
+  areas_to_improve text,
+  medical_notes text,
+  admin_notes text,
+  status text not null default 'active' check (status in ('active', 'inactive', 'paused')),
+  enrollment_date date default current_date,
   created_at timestamptz not null default now()
 );
 
