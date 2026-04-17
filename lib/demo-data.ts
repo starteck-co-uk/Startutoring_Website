@@ -1,6 +1,17 @@
 import type { Student, Quiz, QuizQuestion, QuizAttempt, Syllabus } from './types';
 
-export const DEMO_STUDENTS: Student[] = [];
+export const DEMO_STUDENTS: Student[] = [
+  {
+    id: 'admin-1',
+    name: 'Star Admin',
+    email: 'info@startutoring.uk',
+    pin: '1969',
+    role: 'admin',
+    grade: 'Administrator',
+    avatar: '★',
+    status: 'active'
+  }
+];
 
 // simple in-memory store for demo mode. Not durable across cold starts.
 const store: any[] = [];
