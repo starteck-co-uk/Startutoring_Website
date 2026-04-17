@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StarField from '@/components/StarField';
@@ -12,15 +12,6 @@ export default function PortalLoginPage() {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [supaOk, setSupaOk] = useState<boolean>(true);
-
-  useEffect(() => {
-    // best-effort — we just check env var presence via a HEAD call
-    fetch('/api/auth/login', { method: 'GET' })
-      .then((r) => r.json())
-      .then((j) => setSupaOk(!!j.supabase))
-      .catch(() => setSupaOk(false));
-  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,10 +38,7 @@ export default function PortalLoginPage() {
     }
   };
 
-  const fillDemo = (e: string) => {
-    setEmail(e);
-    setPin('1234');
-  };
+
 
   return (
     <main className="min-h-screen flex items-center justify-center px-5 relative overflow-hidden py-12">
@@ -70,11 +58,6 @@ export default function PortalLoginPage() {
           <p className="text-xs tracking-[0.3em] text-ink-muted mt-1 uppercase">Student Portal</p>
         </div>
 
-        {!supaOk && (
-          <div className="glass p-4 mb-5 border-l-4 border-warn text-sm text-ink-soft">
-            ⚠ Supabase not configured — running in demo mode with local accounts.
-          </div>
-        )}
 
         <GlassCard className="!p-8" hover={false}>
           <form onSubmit={submit} className="space-y-5">
@@ -123,33 +106,6 @@ export default function PortalLoginPage() {
             </button>
           </form>
 
-          <div className="mt-7 pt-6 border-t border-white/5">
-            <p className="text-xs text-ink-muted uppercase tracking-widest mb-3 text-center">
-              Demo Accounts
-            </p>
-            <div className="space-y-2 text-xs">
-              {[
-                ['amara@test.com', '1234', 'Student'],
-                ['oliver@test.com', '1234', 'Student'],
-                ['parent@test.com', '1234', 'Parent'],
-                ['admin@startutoring.uk', '0000', 'Admin']
-              ].map(([e, p, r]) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => { setEmail(e); setPin(p); }}
-                  className={`w-full flex justify-between items-center px-3 py-2 rounded-lg border transition ${
-                    r === 'Admin'
-                      ? 'bg-gold-dim border-gold/30 hover:border-gold/60'
-                      : 'bg-white/5 border-white/5 hover:border-gold/30'
-                  }`}
-                >
-                  <span className="text-ink">{e}</span>
-                  <span className="text-ink-muted">PIN: {p} • {r}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </GlassCard>
 
         <div className="text-center mt-6">
