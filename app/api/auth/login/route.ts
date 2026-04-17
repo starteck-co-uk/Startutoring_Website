@@ -13,28 +13,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and PIN are required' }, { status: 400 });
     }
 
+    const emailLower = email.toLowerCase().trim();
+
+    // Try Supabase first
     const sb = getSupabase();
     if (sb) {
-      const { data, error } = await sb
-        .from('students')
-        .select('*')
-        .eq('email', email)
-        .eq('pin', pin)
-        .single();
-      if (error || !data) {
-        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      try {
+        const { data } = await sb
+          .from('students')
+          .select('*')
+          .eq('email', emailLower)
+          .eq('pin', pin)
+          .single();
+        if (data) {
+          return NextResponse.json({ user: data });
+        }
+      } catch {
+        // Supabase query failed (table missing, etc.) — fall through to demo
       }
-      return NextResponse.json({ user: data });
     }
 
-    // demo mode fallback
+    // Always fall back to built-in accounts (works even when Supabase is
+    // connected but the schema hasn't been run or the user doesn't exist yet)
     const user = DEMO_STUDENTS.find(
-      (s) => s.email.toLowerCase() === email.toLowerCase() && s.pin === pin
+      (s) => s.email.toLowerCase() === emailLower && s.pin === pin
     );
-    if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    if (user) {
+      return NextResponse.json({ user });
     }
-    return NextResponse.json({ user });
+
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
