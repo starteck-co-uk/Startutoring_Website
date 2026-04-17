@@ -38,8 +38,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${outfit.variable}`}>
-      <body>
+    <html lang="en" className={`${fraunces.variable} ${outfit.variable}`} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <div className="bg-mesh">
           <div className="blob blob-gold" />
           <div className="blob blob-blue" />
