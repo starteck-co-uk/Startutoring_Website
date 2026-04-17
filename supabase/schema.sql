@@ -192,29 +192,11 @@ create policy "assessments insert" on public.assessments for insert with check (
 drop policy if exists "contacts insert" on public.contacts;
 create policy "contacts insert" on public.contacts for insert with check (true);
 
--- ========== DEMO DATA ==========
-
-insert into public.students (id, name, email, pin, role, grade, avatar)
-values
-  ('11111111-1111-1111-1111-111111111111', 'Amara Patel',  'amara@test.com',  '1234', 'student', 'Year 10 — GCSE', 'A'),
-  ('22222222-2222-2222-2222-222222222222', 'Oliver Hughes','oliver@test.com', '1234', 'student', 'Year 6 — 11+',   'O'),
-  ('33333333-3333-3333-3333-333333333333', 'Sarah Patel',  'parent@test.com', '1234', 'parent',  'Parent',         'S'),
-  ('44444444-4444-4444-4444-444444444444', 'Star Admin',   'admin@startutoring.uk', '0000', 'admin', 'Administrator', '★')
-on conflict (email) do nothing;
-
--- Link Amara to Sarah (parent)
-update public.students
-set parent_id = '33333333-3333-3333-3333-333333333333'
-where id = '11111111-1111-1111-1111-111111111111';
-
--- 7 demo quiz results for Amara (Maths/Science/English, GCSE level)
-insert into public.quiz_results (student_id, subject, level, title, score, total, time_taken_secs, questions, created_at)
-values
-  ('11111111-1111-1111-1111-111111111111', 'Maths',   'GCSE', 'Maths Quiz — GCSE',   4, 5, 420, '[]'::jsonb, now() - interval '7 days'),
-  ('11111111-1111-1111-1111-111111111111', 'Science', 'GCSE', 'Science Quiz — GCSE', 3, 5, 480, '[]'::jsonb, now() - interval '6 days'),
-  ('11111111-1111-1111-1111-111111111111', 'English', 'GCSE', 'English Quiz — GCSE', 5, 5, 360, '[]'::jsonb, now() - interval '5 days'),
-  ('11111111-1111-1111-1111-111111111111', 'Maths',   'GCSE', 'Maths Quiz — GCSE',   4, 5, 400, '[]'::jsonb, now() - interval '4 days'),
-  ('11111111-1111-1111-1111-111111111111', 'Science', 'GCSE', 'Science Quiz — GCSE', 4, 5, 450, '[]'::jsonb, now() - interval '3 days'),
-  ('11111111-1111-1111-1111-111111111111', 'Maths',   'GCSE', 'Maths Quiz — GCSE',   5, 5, 380, '[]'::jsonb, now() - interval '2 days'),
-  ('11111111-1111-1111-1111-111111111111', 'English', 'GCSE', 'English Quiz — GCSE', 4, 5, 410, '[]'::jsonb, now() - interval '1 days')
-on conflict do nothing;
+-- ========== SEED DATA ==========
+-- Insert your admin account below. Update the email, name, and PIN as needed.
+-- Admin accounts are required to manage students, quizzes, and settings.
+--
+-- Example:
+-- insert into public.students (name, email, pin, role, grade, avatar)
+-- values ('Your Name', 'admin@yourdomain.com', '0000', 'admin', 'Administrator', '★')
+-- on conflict (email) do nothing;
