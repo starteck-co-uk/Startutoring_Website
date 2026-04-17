@@ -193,10 +193,6 @@ drop policy if exists "contacts insert" on public.contacts;
 create policy "contacts insert" on public.contacts for insert with check (true);
 
 -- ========== SEED DATA ==========
--- Insert your admin account below. Update the email, name, and PIN as needed.
--- Admin accounts are required to manage students, quizzes, and settings.
---
--- Example:
--- insert into public.students (name, email, pin, role, grade, avatar)
--- values ('Your Name', 'admin@yourdomain.com', '0000', 'admin', 'Administrator', '★')
--- on conflict (email) do nothing;
+insert into public.students (name, email, pin, role, grade, avatar)
+values ('Star Admin', 'info@startutoring.uk', '1969', 'admin', 'Administrator', '★')
+on conflict (email) do nothing;
