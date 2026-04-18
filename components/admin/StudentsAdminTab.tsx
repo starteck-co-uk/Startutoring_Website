@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import type { Student } from '@/lib/types';
 
-type Role = 'student' | 'parent' | 'admin';
 type Status = 'active' | 'inactive' | 'paused';
 
 const SUBJECT_OPTIONS = ['Maths', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
@@ -12,17 +11,15 @@ const LEVEL_OPTIONS = [
   'Year 2 — KS1', 'Year 3 — KS2', 'Year 4 — KS2', 'Year 5 — KS2', 'Year 6 — 11+',
   'Year 7 — KS3', 'Year 8 — KS3', 'Year 9 — KS3',
   'Year 10 — GCSE', 'Year 11 — GCSE',
-  'Year 12 — A-Level', 'Year 13 — A-Level',
-  'Parent', 'Administrator'
+  'Year 12 — A-Level', 'Year 13 — A-Level'
 ];
 
 interface FormState {
   name: string;
   email: string;
   pin: string;
-  role: Role;
   grade: string;
-  parent_id: string;
+  parent_name: string;
   avatar: string;
   phone: string;
   school_name: string;
@@ -38,9 +35,8 @@ const emptyForm = (): FormState => ({
   name: '',
   email: '',
   pin: '1234',
-  role: 'student',
   grade: '',
-  parent_id: '',
+  parent_name: '',
   avatar: '',
   phone: '',
   school_name: '',
@@ -57,7 +53,6 @@ export default function StudentsAdminTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | Status>('all');
   const [editing, setEditing] = useState<Student | 'new' | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Student | null>(null);
@@ -69,7 +64,7 @@ export default function StudentsAdminTab() {
       const r = await fetch('/api/admin/students');
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Failed to load students');
-      setStudents(j.students || []);
+      setStudents((j.students || []).filter((s: Student) => s.role !== 'admin'));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -79,22 +74,20 @@ export default function StudentsAdminTab() {
 
   useEffect(() => { refresh(); }, []);
 
-  const parents = useMemo(() => students.filter((s) => s.role === 'parent'), [students]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return students.filter((s) => {
-      if (roleFilter !== 'all' && s.role !== roleFilter) return false;
       if (statusFilter !== 'all' && (s.status || 'active') !== statusFilter) return false;
       if (!q) return true;
       return (
         s.name?.toLowerCase().includes(q) ||
         s.email?.toLowerCase().includes(q) ||
+        s.parent_name?.toLowerCase().includes(q) ||
         s.school_name?.toLowerCase().includes(q) ||
         s.grade?.toLowerCase().includes(q)
       );
     });
-  }, [students, search, roleFilter, statusFilter]);
+  }, [students, search, statusFilter]);
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
@@ -125,12 +118,12 @@ export default function StudentsAdminTab() {
       <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
         <div>
           <h2 className="font-serif text-3xl font-semibold text-gradient">
-            Students & Parents <span className="text-lg text-ink-muted">({students.length})</span>
+            Students <span className="text-lg text-ink-muted">({students.length})</span>
           </h2>
-          <p className="text-sm text-ink-soft mt-1">Manage student profiles, contact details, and tutoring notes.</p>
+          <p className="text-sm text-ink-soft mt-1">Manage student profiles. Parents log in with the email and PIN you set here.</p>
         </div>
         <button onClick={() => setEditing('new')} className="btn btn-gold">
-          + Add Person
+          + Add Student
         </button>
       </div>
 
@@ -142,23 +135,13 @@ export default function StudentsAdminTab() {
 
       {/* Filters */}
       <GlassCard className="!p-4 mb-6" hover={false}>
-        <div className="grid md:grid-cols-3 gap-3">
+        <div className="grid md:grid-cols-2 gap-3">
           <input
             className="field"
-            placeholder="Search by name, email, school..."
+            placeholder="Search by student, parent, email, school..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <select
-            className="field"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as any)}
-          >
-            <option value="all">All roles</option>
-            <option value="student">Students</option>
-            <option value="parent">Parents</option>
-            <option value="admin">Admins</option>
-          </select>
           <select
             className="field"
             value={statusFilter}
@@ -174,14 +157,14 @@ export default function StudentsAdminTab() {
 
       {filtered.length === 0 ? (
         <GlassCard className="!p-10 text-center" hover={false}>
-          <p className="text-ink-muted">No people match the current filters.</p>
+          <p className="text-ink-muted">No students yet. Add your first student above.</p>
         </GlassCard>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((s) => (
-            <PersonCard
+            <StudentCard
               key={s.id}
-              person={s}
+              student={s}
               onEdit={() => setEditing(s)}
               onDelete={() => setConfirmDelete(s)}
             />
@@ -190,9 +173,8 @@ export default function StudentsAdminTab() {
       )}
 
       {editing && (
-        <PersonModal
+        <StudentModal
           existing={editing === 'new' ? null : editing}
-          parents={parents}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); refresh(); }}
         />
@@ -200,7 +182,7 @@ export default function StudentsAdminTab() {
 
       {confirmDelete && (
         <ConfirmModal
-          title="Delete this person?"
+          title="Delete this student?"
           message={`Are you sure you want to delete ${confirmDelete.name}? This will also remove all their quiz history. This cannot be undone.`}
           confirmLabel="Delete"
           danger
@@ -212,9 +194,9 @@ export default function StudentsAdminTab() {
   );
 }
 
-/* ==================== PERSON CARD ==================== */
-function PersonCard({ person, onEdit, onDelete }: { person: Student; onEdit: () => void; onDelete: () => void }) {
-  const status = person.status || 'active';
+/* ==================== STUDENT CARD ==================== */
+function StudentCard({ student, onEdit, onDelete }: { student: Student; onEdit: () => void; onDelete: () => void }) {
+  const status = student.status || 'active';
   const statusColors: Record<string, string> = {
     active: 'bg-green-400/10 border-green-400/30 text-green-300',
     paused: 'bg-yellow-400/10 border-yellow-400/30 text-yellow-300',
@@ -227,46 +209,36 @@ function PersonCard({ person, onEdit, onDelete }: { person: Student; onEdit: () 
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg shrink-0"
           style={{
-            background: person.role === 'parent'
-              ? 'linear-gradient(135deg, #a78bfa, #6366f1)'
-              : person.role === 'admin'
-              ? 'linear-gradient(135deg, #f472b6, #ec4899)'
-              : 'linear-gradient(135deg, #ffd166, #f5b72f)',
+            background: 'linear-gradient(135deg, #ffd166, #f5b72f)',
             color: '#1a1304'
           }}
         >
-          {person.avatar || person.name?.[0] || '?'}
+          {student.avatar || student.name?.[0] || '?'}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-serif text-lg font-semibold truncate">{person.name}</h3>
-          <p className="text-xs text-ink-muted truncate">{person.email}</p>
+          <h3 className="font-serif text-lg font-semibold truncate">{student.name}</h3>
+          {student.parent_name && (
+            <p className="text-xs text-ink-soft truncate">Parent: {student.parent_name}</p>
+          )}
+          <p className="text-xs text-ink-muted truncate">{student.email}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap mb-3">
-        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-semibold ${
-          person.role === 'student'
-            ? 'bg-gold-dim border border-gold/30 text-gold-light'
-            : person.role === 'parent'
-            ? 'bg-purple-400/10 border border-purple-400/30 text-purple-300'
-            : 'bg-pink-400/10 border border-pink-400/30 text-pink-300'
-        }`}>
-          {person.role}
-        </span>
         <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-semibold border ${statusColors[status]}`}>
           {status}
         </span>
-        {person.grade && (
-          <span className="text-xs text-ink-muted">{person.grade}</span>
+        {student.grade && (
+          <span className="text-xs text-ink-muted">{student.grade}</span>
         )}
       </div>
 
       <div className="space-y-1 text-xs text-ink-soft mb-4">
-        {person.phone && <p>📞 {person.phone}</p>}
-        {person.school_name && <p>🏫 {person.school_name}</p>}
-        {person.subjects && person.subjects.length > 0 && (
+        {student.phone && <p>Phone: {student.phone}</p>}
+        {student.school_name && <p>School: {student.school_name}</p>}
+        {student.subjects && student.subjects.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {person.subjects.map((sub) => (
+            {student.subjects.map((sub) => (
               <span key={sub} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
                 {sub}
               </span>
@@ -293,15 +265,13 @@ function PersonCard({ person, onEdit, onDelete }: { person: Student; onEdit: () 
   );
 }
 
-/* ==================== PERSON MODAL ==================== */
-function PersonModal({
+/* ==================== STUDENT MODAL ==================== */
+function StudentModal({
   existing,
-  parents,
   onClose,
   onSaved
 }: {
   existing: Student | null;
-  parents: Student[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -311,9 +281,8 @@ function PersonModal({
       name: existing.name || '',
       email: existing.email || '',
       pin: existing.pin || '1234',
-      role: (existing.role || 'student') as Role,
       grade: existing.grade || '',
-      parent_id: existing.parent_id || '',
+      parent_name: existing.parent_name || '',
       avatar: existing.avatar || '',
       phone: existing.phone || '',
       school_name: existing.school_name || '',
@@ -343,7 +312,7 @@ function PersonModal({
   const save = async () => {
     setError(null);
     if (!form.name.trim() || !form.email.trim() || !form.pin.trim()) {
-      setError('Name, email, and PIN are required.');
+      setError('Student name, parent email, and PIN are required.');
       return;
     }
     if (!/^\S+@\S+\.\S+$/.test(form.email)) {
@@ -359,7 +328,7 @@ function PersonModal({
     try {
       const payload = {
         ...form,
-        parent_id: form.parent_id || null,
+        role: 'student',
         avatar: form.avatar || form.name[0]?.toUpperCase()
       };
       const url = existing ? `/api/admin/students/${existing.id}` : '/api/admin/students';
@@ -390,7 +359,7 @@ function PersonModal({
       >
         <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-white/5 bg-[#0c1424]/95 backdrop-blur-xl">
           <h3 className="font-serif text-2xl font-semibold text-gradient">
-            {existing ? `Edit ${existing.name}` : 'Add New Person'}
+            {existing ? `Edit ${existing.name}` : 'Add New Student'}
           </h3>
           <button
             onClick={onClose}
@@ -407,27 +376,35 @@ function PersonModal({
             </div>
           )}
 
-          {/* Identity */}
-          <Section title="Identity">
+          {/* Student & Parent Info */}
+          <Section title="Student & Parent">
             <div className="grid md:grid-cols-2 gap-3">
-              <Field label="Full Name *">
+              <Field label="Student's Full Name *">
                 <input
                   className="field"
                   value={form.name}
                   onChange={(e) => update('name', e.target.value)}
-                  placeholder="Jane Doe"
+                  placeholder="e.g. Amara Patel"
                 />
               </Field>
-              <Field label="Email *">
+              <Field label="Parent's Name">
+                <input
+                  className="field"
+                  value={form.parent_name}
+                  onChange={(e) => update('parent_name', e.target.value)}
+                  placeholder="e.g. Sarah Patel"
+                />
+              </Field>
+              <Field label="Parent's Email *" hint="Used to log in to the portal">
                 <input
                   type="email"
                   className="field"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
-                  placeholder="jane@example.com"
+                  placeholder="parent@email.com"
                 />
               </Field>
-              <Field label="PIN *" hint="4–6 digit login PIN">
+              <Field label="Login PIN *" hint="4–6 digit PIN shared with parent">
                 <input
                   className="field font-mono"
                   value={form.pin}
@@ -435,7 +412,16 @@ function PersonModal({
                   placeholder="1234"
                 />
               </Field>
-              <Field label="Avatar Initial" hint="Single character displayed on cards">
+              <Field label="Parent's Phone">
+                <input
+                  type="tel"
+                  className="field"
+                  value={form.phone}
+                  onChange={(e) => update('phone', e.target.value)}
+                  placeholder="+44 7..."
+                />
+              </Field>
+              <Field label="Avatar Initial" hint="Single character shown on cards">
                 <input
                   className="field"
                   value={form.avatar}
@@ -447,18 +433,17 @@ function PersonModal({
             </div>
           </Section>
 
-          {/* Role & Status */}
-          <Section title="Role & Status">
-            <div className="grid md:grid-cols-3 gap-3">
-              <Field label="Role *">
+          {/* Level & Status */}
+          <Section title="Level & Status">
+            <div className="grid md:grid-cols-2 gap-3">
+              <Field label="Year / Level *">
                 <select
                   className="field"
-                  value={form.role}
-                  onChange={(e) => update('role', e.target.value as Role)}
+                  value={form.grade}
+                  onChange={(e) => update('grade', e.target.value)}
                 >
-                  <option value="student">Student</option>
-                  <option value="parent">Parent</option>
-                  <option value="admin">Admin</option>
+                  <option value="">Select level...</option>
+                  {LEVEL_OPTIONS.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
               </Field>
               <Field label="Status">
@@ -472,48 +457,6 @@ function PersonModal({
                   <option value="inactive">Inactive</option>
                 </select>
               </Field>
-              <Field label="Year / Level">
-                <select
-                  className="field"
-                  value={form.grade}
-                  onChange={(e) => update('grade', e.target.value)}
-                >
-                  <option value="">Select level...</option>
-                  {LEVEL_OPTIONS.map((l) => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </Field>
-            </div>
-
-            {form.role === 'student' && parents.length > 0 && (
-              <div className="mt-3">
-                <Field label="Linked Parent" hint="Optional — link to an existing parent account">
-                  <select
-                    className="field"
-                    value={form.parent_id}
-                    onChange={(e) => update('parent_id', e.target.value)}
-                  >
-                    <option value="">— None —</option>
-                    {parents.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.email})</option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-            )}
-          </Section>
-
-          {/* Contact */}
-          <Section title="Contact & School">
-            <div className="grid md:grid-cols-2 gap-3">
-              <Field label="Phone">
-                <input
-                  type="tel"
-                  className="field"
-                  value={form.phone}
-                  onChange={(e) => update('phone', e.target.value)}
-                  placeholder="+44 7..."
-                />
-              </Field>
               <Field label="School Name">
                 <input
                   className="field"
@@ -525,74 +468,72 @@ function PersonModal({
             </div>
           </Section>
 
-          {/* Tutoring profile (students only) */}
-          {form.role === 'student' && (
-            <>
-              <Section title="Subjects Being Tutored">
-                <div className="flex flex-wrap gap-2">
-                  {SUBJECT_OPTIONS.map((sub) => {
-                    const active = form.subjects.includes(sub);
-                    return (
-                      <button
-                        key={sub}
-                        type="button"
-                        onClick={() => toggleSubject(sub)}
-                        className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                          active
-                            ? 'bg-gold-dim border-gold/60 text-gold-light'
-                            : 'bg-white/3 border-white/10 text-ink-soft hover:border-white/20'
-                        }`}
-                      >
-                        {sub}
-                      </button>
-                    );
-                  })}
-                </div>
-              </Section>
+          {/* Subjects */}
+          <Section title="Subjects Being Tutored">
+            <div className="flex flex-wrap gap-2">
+              {SUBJECT_OPTIONS.map((sub) => {
+                const active = form.subjects.includes(sub);
+                return (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => toggleSubject(sub)}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition ${
+                      active
+                        ? 'bg-gold-dim border-gold/60 text-gold-light'
+                        : 'bg-white/3 border-white/10 text-ink-soft hover:border-white/20'
+                    }`}
+                  >
+                    {sub}
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
 
-              <Section title="Academic Profile">
-                <div className="grid md:grid-cols-2 gap-3">
-                  <Field label="Strengths">
-                    <textarea
-                      className="field min-h-[80px]"
-                      value={form.strengths}
-                      onChange={(e) => update('strengths', e.target.value)}
-                      placeholder="Strong in algebra, enjoys problem-solving..."
-                    />
-                  </Field>
-                  <Field label="Areas to Improve">
-                    <textarea
-                      className="field min-h-[80px]"
-                      value={form.areas_to_improve}
-                      onChange={(e) => update('areas_to_improve', e.target.value)}
-                      placeholder="Needs work on essay structure, time management..."
-                    />
-                  </Field>
-                </div>
-              </Section>
+          {/* Academic Profile */}
+          <Section title="Academic Profile">
+            <div className="grid md:grid-cols-2 gap-3">
+              <Field label="Strengths">
+                <textarea
+                  className="field min-h-[80px]"
+                  value={form.strengths}
+                  onChange={(e) => update('strengths', e.target.value)}
+                  placeholder="Strong in algebra, enjoys problem-solving..."
+                />
+              </Field>
+              <Field label="Areas to Improve">
+                <textarea
+                  className="field min-h-[80px]"
+                  value={form.areas_to_improve}
+                  onChange={(e) => update('areas_to_improve', e.target.value)}
+                  placeholder="Needs work on essay structure, time management..."
+                />
+              </Field>
+            </div>
+          </Section>
 
-              <Section title="Care & Internal Notes">
-                <Field label="Medical Notes" hint="Allergies, accommodations, learning differences">
-                  <textarea
-                    className="field min-h-[60px]"
-                    value={form.medical_notes}
-                    onChange={(e) => update('medical_notes', e.target.value)}
-                    placeholder="e.g. Dyslexia — needs extra time. Severe nut allergy."
-                  />
-                </Field>
-                <div className="mt-3">
-                  <Field label="Admin Notes" hint="Private — not visible to students or parents">
-                    <textarea
-                      className="field min-h-[60px]"
-                      value={form.admin_notes}
-                      onChange={(e) => update('admin_notes', e.target.value)}
-                      placeholder="Internal notes for the tutoring team..."
-                    />
-                  </Field>
-                </div>
-              </Section>
-            </>
-          )}
+          {/* Care & Notes */}
+          <Section title="Care & Internal Notes">
+            <Field label="Medical Notes" hint="Allergies, accommodations, learning differences">
+              <textarea
+                className="field min-h-[60px]"
+                value={form.medical_notes}
+                onChange={(e) => update('medical_notes', e.target.value)}
+                placeholder="e.g. Dyslexia — needs extra time. Severe nut allergy."
+              />
+            </Field>
+            <div className="mt-3">
+              <Field label="Admin Notes" hint="Private — not visible to parents">
+                <textarea
+                  className="field min-h-[60px]"
+                  value={form.admin_notes}
+                  onChange={(e) => update('admin_notes', e.target.value)}
+                  placeholder="Internal notes for the tutoring team..."
+                />
+              </Field>
+            </div>
+          </Section>
         </div>
 
         <div className="sticky bottom-0 flex items-center justify-end gap-3 p-5 border-t border-white/5 bg-[#0c1424]/95 backdrop-blur-xl">
@@ -607,7 +548,7 @@ function PersonModal({
             disabled={saving}
             className="btn btn-gold disabled:opacity-60"
           >
-            {saving ? 'Saving...' : existing ? 'Save Changes' : 'Create Person'}
+            {saving ? 'Saving...' : existing ? 'Save Changes' : 'Add Student'}
           </button>
         </div>
       </div>

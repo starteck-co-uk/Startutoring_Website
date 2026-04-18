@@ -192,7 +192,6 @@ function OverviewTab({ data }: { data: any }) {
           <div className="space-y-4">
             {[
               { l: 'Total Students', v: c.students },
-              { l: 'Total Parents', v: c.parents },
               { l: 'Total Quizzes', v: c.quizzes },
               { l: 'Total Assessments', v: c.assessments },
               { l: 'Total Contact Messages', v: c.contacts }

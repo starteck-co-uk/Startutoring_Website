@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabase, getSupabase } from '@/lib/supabase';
 import { DEMO_STUDENTS } from '@/lib/demo-data';
 
-// GET — list all students/parents
+// GET — list all students
 export async function GET() {
   const sb = getAdminSupabase() || getSupabase();
   if (sb) {
@@ -16,27 +16,23 @@ export async function GET() {
   return NextResponse.json({ students: DEMO_STUDENTS });
 }
 
-// POST — create new student/parent
+// POST — create new student
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, pin, role } = body;
+    const { name, email, pin } = body;
 
-    if (!name || !email || !pin || !role) {
-      return NextResponse.json({ error: 'name, email, pin, and role required' }, { status: 400 });
-    }
-
-    if (!['student', 'parent', 'admin'].includes(role)) {
-      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+    if (!name || !email || !pin) {
+      return NextResponse.json({ error: 'name, email, and pin required' }, { status: 400 });
     }
 
     const row: any = {
       name,
       email: email.toLowerCase().trim(),
       pin,
-      role,
+      role: 'student',
       grade: body.grade || null,
-      parent_id: body.parent_id || null,
+      parent_name: body.parent_name || null,
       avatar: body.avatar || name[0]?.toUpperCase(),
       phone: body.phone || null,
       school_name: body.school_name || null,
