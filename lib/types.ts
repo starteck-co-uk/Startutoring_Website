@@ -24,9 +24,9 @@ export interface Student {
   name: string;
   email: string;
   pin: string;
-  role: 'student' | 'parent' | 'admin';
+  role: 'student' | 'admin';
   grade?: string;
-  parent_id?: string;
+  parent_name?: string;
   avatar?: string;
   phone?: string;
   school_name?: string;

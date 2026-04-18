@@ -30,7 +30,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         counts: {
           students: (students || []).filter((s: any) => s.role === 'student').length,
-          parents: (students || []).filter((s: any) => s.role === 'parent').length,
           quizzes: (quizzes || []).length,
           assessments: (assessments || []).length,
           pendingAssessments: (assessments || []).filter((a: any) => a.status === 'pending').length,
@@ -58,7 +57,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     counts: {
       students: students.filter((s) => s.role === 'student').length,
-      parents: students.filter((s) => s.role === 'parent').length,
       quizzes: quizzes.length,
       assessments: assessments.length,
       pendingAssessments: assessments.filter((a: any) => a.status === 'pending').length,
