@@ -35,6 +35,22 @@ export const demoAssessmentStore = {
   }
 };
 
+const feedbackStore: any[] = [];
+
+export const demoFeedbackStore = {
+  all() { return feedbackStore; },
+  insert(row: any) {
+    const withId = { ...row, id: `fb${Date.now()}`, created_at: new Date().toISOString() };
+    feedbackStore.unshift(withId);
+    return withId;
+  },
+  markRead(id: string) {
+    const item = feedbackStore.find((f) => f.id === id);
+    if (item) item.read = true;
+    return item;
+  }
+};
+
 export const demoContactStore = {
   all() { return contactsStore; },
   insert(row: any) {

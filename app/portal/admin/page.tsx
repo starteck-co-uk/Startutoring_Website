@@ -8,7 +8,7 @@ import SyllabiTab from '@/components/admin/SyllabiTab';
 import QuizzesTab from '@/components/admin/QuizzesTab';
 import StudentsAdminTab from '@/components/admin/StudentsAdminTab';
 
-type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'students' | 'settings';
+type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'settings';
 
 interface AdminUser {
   id: string;
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'students') {
+    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'students' || tab === 'feedback') {
       setLoading(false);
       return;
     }
@@ -61,6 +61,7 @@ export default function AdminDashboard() {
     { id: 'quizzes', label: 'Quizzes', icon: '📝' },
     { id: 'assessments', label: 'Assessments', icon: '📋' },
     { id: 'contacts', label: 'Messages', icon: '✉' },
+    { id: 'feedback', label: 'Feedback', icon: '⭐' },
     { id: 'students', label: 'Students', icon: '🎓' },
     { id: 'settings', label: 'AI Settings', icon: '⚙' }
   ];
@@ -124,6 +125,7 @@ export default function AdminDashboard() {
             {tab === 'quizzes' && <QuizzesTab />}
             {tab === 'assessments' && <AssessmentsTab data={data} />}
             {tab === 'contacts' && <ContactsTab data={data} />}
+            {tab === 'feedback' && <FeedbackTab />}
             {tab === 'students' && <StudentsAdminTab />}
             {tab === 'settings' && <SettingsTab />}
           </>
@@ -349,6 +351,69 @@ function ContactsTab({ data }: { data: any }) {
                 </div>
                 <p className="text-xs text-ink-muted whitespace-nowrap">
                   {new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                </p>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ==================== FEEDBACK ==================== */
+function FeedbackTab() {
+  const [feedback, setFeedback] = useState<any[]>([]);
+  const [loadingFb, setLoadingFb] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/feedback')
+      .then((r) => r.json())
+      .then((d) => setFeedback(d.feedback || []))
+      .catch(() => {})
+      .finally(() => setLoadingFb(false));
+  }, []);
+
+  if (loadingFb) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-10 h-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="font-serif text-3xl font-semibold text-gradient mb-6">
+        Feedback <span className="text-lg text-ink-muted">({feedback.length})</span>
+      </h2>
+      {feedback.length === 0 ? (
+        <GlassCard className="!p-10 text-center" hover={false}>
+          <p className="text-ink-muted">No feedback submitted yet.</p>
+        </GlassCard>
+      ) : (
+        <div className="space-y-4">
+          {feedback.map((f: any) => (
+            <GlassCard key={f.id} className="!p-6" hover={false}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-serif text-lg font-semibold">{f.name}</h3>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span key={star} className={star <= f.rating ? 'text-gold' : 'text-ink-muted'}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <a href={`mailto:${f.email}`} className="text-sm text-gold hover:text-gold-light">
+                    {f.email}
+                  </a>
+                  <p className="text-ink-soft mt-3 leading-relaxed">{f.message}</p>
+                </div>
+                <p className="text-xs text-ink-muted whitespace-nowrap">
+                  {new Date(f.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </p>
               </div>
             </GlassCard>
