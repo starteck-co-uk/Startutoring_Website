@@ -59,17 +59,26 @@ export default function Footer() {
             <ul className="space-y-3 text-ink-soft text-sm">
               <li className="flex gap-2">
                 <span className="text-gold">📍</span>
-                <span>1st Floor, 2 Urmston Lane,<br/>Stretford, M32 9BP</span>
+                <span>2 Urmston Lane, Stretford,<br/>Manchester, M32 9BP</span>
               </li>
               <li className="flex gap-2">
                 <span className="text-gold">📞</span>
-                <a href="tel:01615664995" className="hover:text-white transition">01615664995</a>
+                <a href="tel:+447828186831" className="hover:text-white transition">+44 7828 186831</a>
               </li>
               <li className="flex gap-2">
                 <span className="text-gold">✉</span>
                 <a href="mailto:info@startutoring.uk" className="hover:text-white transition">info@startutoring.uk</a>
               </li>
             </ul>
+            <div className="mt-4 rounded-xl overflow-hidden border border-white/5">
+              <iframe
+                title="Star Tutoring location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2376.267885614492!2d-2.3141703000000002!3d53.4457974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bad9c659bd00b%3A0xa8b5592d7ca3296f!2sStar%20Tutoring!5e0!3m2!1sen!2sin!4v1777360296523!5m2!1sen!2sin"
+                className="w-full h-[150px] border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           </div>
         </div>
 

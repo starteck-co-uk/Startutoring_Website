@@ -119,9 +119,9 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-serif text-lg font-semibold">Visit Us</h3>
                     <p className="text-ink-soft text-sm mt-1">
-                      1st Floor, 2 Urmston Lane
+                      2 Urmston Lane, Stretford
                       <br />
-                      Stretford, M32 9BP
+                      Manchester, M32 9BP
                     </p>
                   </div>
                 </div>
@@ -135,10 +135,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-serif text-lg font-semibold">Call Us</h3>
                     <a
-                      href="tel:01615664995"
+                      href="tel:+447828186831"
                       className="text-ink-soft text-sm mt-1 block hover:text-gold transition"
                     >
-                      01615664995
+                      +44 7828 186831
                     </a>
                   </div>
                 </div>
@@ -164,7 +164,7 @@ export default function ContactPage() {
               <GlassCard className="!p-0 overflow-hidden" hover={false}>
                 <iframe
                   title="Star Tutoring location"
-                  src="https://www.google.com/maps?q=2+Urmston+Lane,+Stretford,+M32+9BP&output=embed"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2376.267885614492!2d-2.3141703000000002!3d53.4457974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bad9c659bd00b%3A0xa8b5592d7ca3296f!2sStar%20Tutoring!5e0!3m2!1sen!2sin!4v1777360296523!5m2!1sen!2sin"
                   className="w-full h-[260px] border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
