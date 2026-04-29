@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Fraunces, Outfit } from 'next/font/google';
 import BackgroundEffects from '@/components/BackgroundEffects';
+import StructuredData from '@/components/StructuredData';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -18,24 +19,64 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'Star Tutoring — Better Grades, Better Future | Stretford, Manchester',
+  metadataBase: new URL('https://startutoring.uk'),
+  title: {
+    default: 'Star Tutoring — Private Tutors in Stretford, Manchester | 11+, GCSE, A-Level',
+    template: '%s | Star Tutoring — Stretford, Manchester'
+  },
   description:
-    'Premium tutoring in Stretford, Manchester. 10+ years experience, DBS-checked tutors, interactive tools and personalised support for 11+, KS2, KS3, GCSE, A-Level and Degree-level students in Maths, English, Science, Engineering and Business.',
+    'Qualified private tutors in Stretford, Manchester. 10+ years experience, DBS-checked. Expert tuition in Maths, English, Science, Engineering & Business for 11+, KS2, KS3, GCSE, A-Level and Degree-level students. Book a free assessment today.',
   keywords: [
     'tutoring Manchester',
-    'Stretford tutors',
-    '11+ preparation',
-    'GCSE tutoring',
-    'A-Level tutors',
-    'Maths English Science',
+    'tutor Stretford',
     'private tuition Manchester',
-    'online tutoring UK'
+    '11+ tutor Manchester',
+    '11+ preparation Stretford',
+    'GCSE tutor Manchester',
+    'GCSE Maths tutor Stretford',
+    'A-Level tutor Manchester',
+    'Maths tutor Manchester',
+    'English tutor Manchester',
+    'Science tutor Manchester',
+    'Physics tutor Manchester',
+    'Chemistry tutor Manchester',
+    'Biology tutor Manchester',
+    'KS2 tutor Stretford',
+    'KS3 tutor Manchester',
+    'online tutoring Manchester',
+    'private tutor Trafford',
+    'tuition centre Stretford',
+    'tuition centre Manchester',
+    'tutoring near me Manchester',
+    'best tutors Manchester'
   ],
   openGraph: {
-    title: 'Star Tutoring — Better Grades, Better Future',
+    title: 'Star Tutoring — Private Tutors in Stretford, Manchester',
     description:
-      'Premium, personalised tutoring for every level. Book a free assessment today.',
-    type: 'website'
+      'Qualified, DBS-checked tutors with 10+ years experience. Maths, English, Science, 11+, GCSE, A-Level. Book a free assessment today.',
+    type: 'website',
+    locale: 'en_GB',
+    siteName: 'Star Tutoring',
+    url: 'https://startutoring.uk'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Star Tutoring — Private Tutors in Stretford, Manchester',
+    description: 'Expert tuition for 11+, GCSE, A-Level and Degree. Book a free assessment.'
+  },
+  alternates: {
+    canonical: 'https://startutoring.uk'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1
+    }
   }
 };
 
@@ -53,6 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="bg-grid" />
         <div className="bg-noise" />
         <BackgroundEffects />
+        <StructuredData />
         {children}
       </body>
     </html>

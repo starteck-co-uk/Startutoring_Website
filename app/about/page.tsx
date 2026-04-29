@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
+
+export const metadata: Metadata = {
+  title: 'About Us — 10+ Years of Teaching Excellence in Stretford',
+  description:
+    'Star Tutoring is led by a director with degrees in Electronics Engineering, International Business Management, and Educational Leadership. Qualified, DBS-checked tutors with 10+ years of experience in Stretford, Manchester.',
+  alternates: { canonical: 'https://startutoring.uk/about' }
+};
 
 export default function AboutPage() {
   return (
