@@ -6,10 +6,10 @@ export default function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   return (
     <Link href="/" className="flex items-center gap-3 group">
       <div
-        className={`${sq} rounded-[12px] flex items-center justify-center font-bold text-[#1a1304] shadow-glow transition-transform group-hover:scale-105`}
+        className={`${sq} rounded-[12px] flex items-center justify-center font-bold text-[#1a1304] transition-all duration-300 group-hover:scale-110`}
         style={{
           background: 'linear-gradient(135deg, #ffd166 0%, #f5b72f 100%)',
-          boxShadow: '0 8px 24px -8px rgba(245,183,47,0.55), inset 0 1px 0 rgba(255,255,255,0.4)'
+          boxShadow: '0 6px 20px -4px rgba(245,183,47,0.5), inset 0 1px 0 rgba(255,255,255,0.35)'
         }}
       >
         ★
