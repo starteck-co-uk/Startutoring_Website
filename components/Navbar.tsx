@@ -26,26 +26,26 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-        scrolled ? 'py-3' : 'py-5'
+        scrolled ? 'py-2.5' : 'py-5'
       }`}
     >
       <div
         className={`container-xl flex items-center justify-between px-5 rounded-full transition-all duration-500 ${
           scrolled
-            ? 'py-2 bg-[rgba(8,13,26,0.75)] backdrop-blur-xl border border-white/5 shadow-lg'
+            ? 'py-2 bg-[rgba(6,10,20,0.8)] backdrop-blur-2xl border border-white/[0.05] shadow-[0_4px_30px_rgba(0,0,0,0.3)]'
             : 'py-2'
         }`}
       >
         <Logo />
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-7">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="text-[0.92rem] text-ink-soft hover:text-white transition-colors relative group"
+              className="text-[0.9rem] text-ink-soft hover:text-white transition-colors duration-300 relative group"
             >
               {l.label}
-              <span className="absolute left-0 right-0 -bottom-1 h-px bg-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              <span className="absolute left-0 right-0 -bottom-1 h-px bg-gradient-to-r from-gold to-gold-light scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
             </Link>
           ))}
           <Link
@@ -56,7 +56,7 @@ export default function Navbar() {
           </Link>
         </nav>
         <button
-          className="lg:hidden w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-xl"
+          className="lg:hidden w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-xl hover:border-gold/30 transition-colors"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
         >
@@ -65,13 +65,13 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="lg:hidden mx-4 mt-3 glass p-6 space-y-3">
+        <div className="lg:hidden mx-4 mt-3 glass p-6 space-y-3 animate-fadeUp">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block text-lg text-ink-soft hover:text-white py-1"
+              className="block text-lg text-ink-soft hover:text-white py-1.5 transition-colors"
             >
               {l.label}
             </Link>

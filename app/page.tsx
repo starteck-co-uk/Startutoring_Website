@@ -12,13 +12,15 @@ export default function HomePage() {
       <main className="pt-24">
         {/* ============== HERO ============== */}
         <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-5">
-          <StarField count={8} />
+          <StarField count={10} />
+          {/* Hero ambient glow */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-gold/5 blur-[120px] pointer-events-none" />
           <div className="container-xl relative z-10 text-center">
             <Reveal>
               <span className="eyebrow">★ Trusted in Stretford for 10+ Years</span>
             </Reveal>
             <Reveal delay={120}>
-              <h1 className="font-serif text-[44px] sm:text-[64px] lg:text-[84px] leading-[0.95] font-semibold mt-3">
+              <h1 className="font-serif text-[44px] sm:text-[64px] lg:text-[86px] leading-[0.92] font-semibold mt-3 tracking-tight">
                 <span className="text-gradient">Better Grades,</span>
                 <br />
                 <span className="text-gradient">Better Future</span>
@@ -43,7 +45,7 @@ export default function HomePage() {
             </Reveal>
 
             <Reveal delay={520}>
-              <div className="mt-14 flex flex-wrap justify-center gap-4 md:gap-8 text-sm">
+              <div className="mt-16 flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
                 {[
                   { icon: '🎓', label: '10+ Years Experience' },
                   { icon: '🛡', label: 'DBS Checked' },
@@ -51,7 +53,7 @@ export default function HomePage() {
                 ].map((t) => (
                   <div
                     key={t.label}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full glass"
+                    className="flex items-center gap-2.5 px-5 py-3 rounded-full glass"
                   >
                     <span className="text-lg">{t.icon}</span>
                     <span className="text-ink-soft font-medium">{t.label}</span>
@@ -61,16 +63,14 @@ export default function HomePage() {
             </Reveal>
           </div>
 
-          <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs text-ink-muted tracking-widest flex flex-col items-center gap-1"
-          >
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs text-ink-muted tracking-widest flex flex-col items-center gap-1">
             <span>SCROLL</span>
-            <span className="w-px h-10 bg-gradient-to-b from-gold to-transparent" />
+            <span className="w-px h-10 bg-gradient-to-b from-gold/60 to-transparent" />
           </div>
         </section>
 
         {/* ============== LEVELS ============== */}
-        <section className="section">
+        <section className="section section-glow">
           <div className="container-xl">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <span className="eyebrow">All Key Stages</span>
@@ -91,13 +91,14 @@ export default function HomePage() {
                 { name: 'GCSE', icon: '◉', subs: 'All Core Subjects', color: '#34d399' },
                 { name: 'A-Level', icon: '▲', subs: 'Sciences • Maths', color: '#ec4899' }
               ].map((l) => (
-                <GlassCard key={l.name} className="text-center !p-6">
+                <GlassCard key={l.name} className="text-center !p-7">
                   <div
-                    className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4"
+                    className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 transition-transform duration-300 hover:scale-110"
                     style={{
-                      background: `linear-gradient(135deg, ${l.color}30, ${l.color}10)`,
-                      border: `1px solid ${l.color}40`,
-                      color: l.color
+                      background: `linear-gradient(135deg, ${l.color}25, ${l.color}08)`,
+                      border: `1px solid ${l.color}35`,
+                      color: l.color,
+                      boxShadow: `0 8px 24px -8px ${l.color}25`
                     }}
                   >
                     {l.icon}
@@ -111,7 +112,7 @@ export default function HomePage() {
         </section>
 
         {/* ============== SUBJECTS ============== */}
-        <section className="section">
+        <section className="section section-glow">
           <div className="container-xl">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <span className="eyebrow">Core Subjects</span>
@@ -129,6 +130,7 @@ export default function HomePage() {
                   icon: '∑',
                   name: 'Maths',
                   grad: 'linear-gradient(135deg, #a78bfa, #6366f1)',
+                  glow: 'rgba(167, 139, 250, 0.2)',
                   desc: 'From times tables to calculus — build unshakeable numeric confidence and problem-solving skills.',
                   levels: '11+ • KS2 • KS3 • GCSE • A-Level • Degree'
                 },
@@ -136,6 +138,7 @@ export default function HomePage() {
                   icon: '⚡',
                   name: 'Science',
                   grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
+                  glow: 'rgba(236, 72, 153, 0.2)',
                   desc: 'Physics, Chemistry and Biology — interactive experiments and exam-focused revision techniques.',
                   levels: 'KS3 • GCSE • A-Level'
                 },
@@ -143,14 +146,15 @@ export default function HomePage() {
                   icon: '📖',
                   name: 'English',
                   grad: 'linear-gradient(135deg, #22d3ee, #3b82f6)',
+                  glow: 'rgba(34, 211, 238, 0.2)',
                   desc: 'Reading comprehension, creative writing, grammar and literature — communicate with clarity and confidence.',
                   levels: '11+ • KS2 • KS3 • GCSE'
                 }
               ].map((s) => (
-                <GlassCard key={s.name} className="!p-8 flex flex-col">
+                <GlassCard key={s.name} className="!p-8 flex flex-col group">
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-bold text-white mb-6"
-                    style={{ background: s.grad, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.6)' }}
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-bold text-white mb-6 transition-transform duration-300 group-hover:scale-105"
+                    style={{ background: s.grad, boxShadow: `0 12px 32px -8px ${s.glow}` }}
                   >
                     {s.icon}
                   </div>
@@ -170,7 +174,7 @@ export default function HomePage() {
         </section>
 
         {/* ============== WHY ============== */}
-        <section className="section">
+        <section className="section section-glow">
           <div className="container-xl">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <span className="eyebrow">Why Star Tutoring</span>
@@ -198,7 +202,7 @@ export default function HomePage() {
                 }
               ].map((w) => (
                 <GlassCard key={w.title} className="!p-8">
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 bg-gold-dim border border-gold/30">
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 bg-gold-dim border border-gold/25 shadow-[0_8px_20px_-8px_rgba(245,183,47,0.2)]">
                     {w.icon}
                   </div>
                   <h3 className="font-serif text-xl font-semibold">{w.title}</h3>
@@ -210,7 +214,7 @@ export default function HomePage() {
         </section>
 
         {/* ============== HOW IT WORKS ============== */}
-        <section className="section">
+        <section className="section section-glow">
           <div className="container-xl">
             <Reveal className="text-center max-w-2xl mx-auto mb-16">
               <span className="eyebrow">Simple Process</span>
@@ -218,7 +222,7 @@ export default function HomePage() {
             </Reveal>
 
             <div className="relative">
-              <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+              <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
               <Reveal stagger className="grid md:grid-cols-3 gap-10 relative">
                 {[
                   {
@@ -237,13 +241,13 @@ export default function HomePage() {
                     desc: 'Track weekly progress on our AI-powered student portal with live analytics and quizzes.'
                   }
                 ].map((s) => (
-                  <div key={s.n} className="text-center">
+                  <div key={s.n} className="text-center group">
                     <div
-                      className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-serif font-semibold relative"
+                      className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-serif font-semibold relative transition-transform duration-300 group-hover:scale-105"
                       style={{
                         background: 'linear-gradient(135deg, #ffd166 0%, #f5b72f 100%)',
                         color: '#1a1304',
-                        boxShadow: '0 0 40px rgba(245,183,47,0.4)'
+                        boxShadow: '0 0 50px rgba(245,183,47,0.35), inset 0 1px 0 rgba(255,255,255,0.3)'
                       }}
                     >
                       {s.n}
@@ -260,7 +264,7 @@ export default function HomePage() {
         {/* ============== PORTAL PROMO ============== */}
         <section className="section">
           <div className="container-xl">
-            <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
               <Reveal variant="right">
                 <span className="eyebrow">New: Student Portal</span>
                 <h2 className="text-4xl md:text-5xl font-semibold text-gradient mt-3 leading-tight">
@@ -290,9 +294,9 @@ export default function HomePage() {
               </Reveal>
 
               <Reveal delay={220}>
-                <GlassCard className="!p-8 relative overflow-hidden">
+                <div className="glass-glow p-8 relative overflow-hidden">
                   <div
-                    className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-30 blur-3xl"
+                    className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-20 blur-[80px]"
                     style={{ background: '#f5b72f' }}
                   />
                   <div className="relative">
@@ -353,14 +357,14 @@ export default function HomePage() {
                       </svg>
                     </div>
                   </div>
-                </GlassCard>
+                </div>
               </Reveal>
             </div>
           </div>
         </section>
 
         {/* ============== TESTIMONIALS ============== */}
-        <section className="section">
+        <section className="section section-glow">
           <div className="container-xl">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <span className="eyebrow">What Families Say</span>
@@ -390,9 +394,9 @@ export default function HomePage() {
                   role: 'Student • Manchester'
                 }
               ].map((t) => (
-                <GlassCard key={t.name} className="!p-8">
-                  <div className="text-gold text-lg">★★★★★</div>
-                  <p className="text-ink mt-4 leading-relaxed font-serif text-[17px]">“{t.quote}”</p>
+                <GlassCard key={t.name} className="!p-8 glass-shine">
+                  <div className="text-gold text-lg tracking-widest">★★★★★</div>
+                  <p className="text-ink mt-4 leading-relaxed font-serif text-[17px] italic opacity-90">"{t.quote}"</p>
                   <div className="divider-line my-5" />
                   <p className="font-semibold">{t.name}</p>
                   <p className="text-xs text-ink-muted">{t.role}</p>
@@ -409,13 +413,12 @@ export default function HomePage() {
               <div
                 className="relative rounded-[28px] overflow-hidden p-10 md:p-16 text-center"
                 style={{
-                  background:
-                    'linear-gradient(135deg, rgba(245,183,47,0.95) 0%, rgba(255,209,102,0.92) 100%)',
-                  boxShadow: '0 40px 80px -20px rgba(245,183,47,0.4)'
+                  background: 'linear-gradient(135deg, rgba(245,183,47,0.95) 0%, rgba(255,209,102,0.92) 100%)',
+                  boxShadow: '0 40px 80px -20px rgba(245,183,47,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
                 }}
               >
                 <div
-                  className="absolute inset-0 opacity-20"
+                  className="absolute inset-0 opacity-15"
                   style={{
                     backgroundImage:
                       'radial-gradient(circle at 20% 30%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 70%, #fff 1px, transparent 1px)',
@@ -426,7 +429,7 @@ export default function HomePage() {
                   <h2 className="font-serif text-4xl md:text-6xl font-semibold text-[#1a1304]">
                     Ready to boost your child's grades?
                   </h2>
-                  <p className="mt-5 text-[#1a1304]/80 text-lg max-w-xl mx-auto">
+                  <p className="mt-5 text-[#1a1304]/75 text-lg max-w-xl mx-auto">
                     Book a free, no-obligation assessment today and discover how Star Tutoring can
                     transform your child's learning journey.
                   </p>
