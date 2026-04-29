@@ -1,8 +1,16 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
+
+export const metadata: Metadata = {
+  title: 'Courses — 11+, KS2, KS3, GCSE, A-Level Tutoring',
+  description:
+    'Expert tutoring courses in Stretford, Manchester. 11+ preparation with mock exams, KS2 & KS3 foundations, GCSE guaranteed grade improvement, A-Level sciences and Maths. Affordable rates, DBS-checked tutors.',
+  alternates: { canonical: 'https://startutoring.uk/courses' }
+};
 
 const courses = [
   {
