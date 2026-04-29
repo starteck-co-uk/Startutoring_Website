@@ -64,7 +64,7 @@ export default function Footer() {
             <ul className="space-y-3 text-ink-soft text-sm">
               <li className="flex gap-2.5">
                 <span className="text-gold">📍</span>
-                <span>2 Urmston Lane, Stretford,<br/>Manchester, M32 9BP</span>
+                <span>1st Floor, 2 Urmston Lane,<br/>Stretford, Manchester, M32 9BP</span>
               </li>
               <li className="flex gap-2.5">
                 <span className="text-gold">📞</span>

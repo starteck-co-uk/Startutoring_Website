@@ -87,15 +87,39 @@ h6 {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 30% 0%, rgba(245, 183, 47, 0.07), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 70% 100%, rgba(99, 102, 241, 0.09), transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(167, 139, 250, 0.04), transparent 70%);
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(245, 183, 47, 0.09), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(34, 211, 238, 0.06), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 70% 100%, rgba(99, 102, 241, 0.1), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 10% 80%, rgba(236, 72, 153, 0.06), transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(167, 139, 250, 0.05), transparent 65%);
 }
 .bg-mesh::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 120%, rgba(6, 10, 20, 0.95), transparent 60%);
+  background:
+    radial-gradient(circle at 50% 120%, rgba(6, 10, 20, 0.9), transparent 60%),
+    radial-gradient(circle at 50% -20%, rgba(6, 10, 20, 0.7), transparent 50%);
+}
+
+/* Aurora light bands */
+.bg-mesh .aurora {
+  position: absolute;
+  top: -30%;
+  left: -20%;
+  width: 140%;
+  height: 100%;
+  background:
+    linear-gradient(135deg, transparent 30%, rgba(245, 183, 47, 0.03) 40%, transparent 50%),
+    linear-gradient(225deg, transparent 30%, rgba(99, 102, 241, 0.04) 42%, transparent 52%),
+    linear-gradient(315deg, transparent 35%, rgba(34, 211, 238, 0.03) 45%, transparent 55%);
+  animation: auroraShift 30s ease-in-out infinite alternate;
+  filter: blur(40px);
+}
+@keyframes auroraShift {
+  0% { transform: translateX(-5%) rotate(-2deg); }
+  50% { transform: translateX(5%) rotate(1deg); }
+  100% { transform: translateX(-3%) rotate(-1deg); }
 }
 
 .bg-grid {
@@ -104,10 +128,10 @@ h6 {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 80% 70% at center, #000 30%, transparent 80%);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 90% 80% at center, #000 20%, transparent 75%);
 }
 
 .bg-noise {
@@ -123,36 +147,45 @@ h6 {
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.25;
+  filter: blur(90px);
+  opacity: 0.3;
   animation: meshFloat 22s ease-in-out infinite;
   will-change: transform;
   contain: strict;
 }
 .blob-gold {
-  top: -12%;
-  left: -8%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(245, 183, 47, 0.8) 0%, transparent 70%);
-}
-.blob-blue {
-  top: 25%;
-  right: -12%;
+  top: -10%;
+  left: -5%;
   width: 550px;
   height: 550px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.6) 0%, transparent 70%);
-  animation-duration: 26s;
+  background: radial-gradient(circle, rgba(245, 183, 47, 0.85) 0%, transparent 65%);
+}
+.blob-blue {
+  top: 20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.7) 0%, transparent 65%);
+  animation-duration: 28s;
   animation-delay: -5s;
 }
 .blob-pink {
-  bottom: -18%;
-  left: 25%;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.5) 0%, transparent 70%);
+  bottom: -15%;
+  left: 20%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.55) 0%, transparent 65%);
   animation-duration: 20s;
   animation-delay: -9s;
+}
+.blob-cyan {
+  top: 55%;
+  left: -8%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.45) 0%, transparent 65%);
+  animation-duration: 24s;
+  animation-delay: -12s;
 }
 
 @keyframes meshFloat {

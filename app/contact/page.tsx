@@ -146,7 +146,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-serif text-lg font-semibold">Visit Us</h3>
                     <p className="text-ink-soft text-sm mt-1">
-                      2 Urmston Lane, Stretford
+                      1st Floor, 2 Urmston Lane, Stretford
                       <br />
                       Manchester, M32 9BP
                     </p>

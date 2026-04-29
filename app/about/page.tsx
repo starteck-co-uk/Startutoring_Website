@@ -45,9 +45,10 @@ export default function AboutPage() {
                     from primary school fundamentals to university-level courses.
                   </p>
                   <p>
-                    Based on the 1st Floor at 2 Urmston Lane, Stretford, we offer both in-person
-                    and online lessons. Every tutor is qualified, DBS-checked, and personally
-                    committed to each student's progress.
+                    Based at 1st Floor, 2 Urmston Lane, Stretford, we offer both in-person
+                    and online lessons. Every tutor is fully qualified, DBS-checked, and personally
+                    committed to each student's progress. Our teaching methods include interactive
+                    tools, live problem-solving, and recorded lessons that students can revisit anytime.
                   </p>
                 </div>
               </GlassCard>
