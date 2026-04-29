@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Fraunces, Outfit } from 'next/font/google';
+import BackgroundEffects from '@/components/BackgroundEffects';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -19,14 +20,16 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: 'Star Tutoring — Better Grades, Better Future | Stretford, Manchester',
   description:
-    'Premium tutoring in Stretford, Manchester. 10+ years experience, DBS-checked tutors, interactive tools and personalised support for 11+, KS2, KS3, GCSE, A-Level and Degree-level students.',
+    'Premium tutoring in Stretford, Manchester. 10+ years experience, DBS-checked tutors, interactive tools and personalised support for 11+, KS2, KS3, GCSE, A-Level and Degree-level students in Maths, English, Science, Engineering and Business.',
   keywords: [
     'tutoring Manchester',
     'Stretford tutors',
     '11+ preparation',
     'GCSE tutoring',
     'A-Level tutors',
-    'Maths English Science'
+    'Maths English Science',
+    'private tuition Manchester',
+    'online tutoring UK'
   ],
   openGraph: {
     title: 'Star Tutoring — Better Grades, Better Future',
@@ -44,9 +47,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="blob blob-gold" />
           <div className="blob blob-blue" />
           <div className="blob blob-pink" />
+          <div className="blob blob-cyan" />
+          <div className="aurora" />
         </div>
         <div className="bg-grid" />
         <div className="bg-noise" />
+        <BackgroundEffects />
         {children}
       </body>
     </html>

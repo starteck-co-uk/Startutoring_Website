@@ -28,9 +28,10 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={250}>
               <p className="mt-8 text-base md:text-lg text-ink-soft max-w-2xl mx-auto leading-relaxed">
-                Star Tutoring is a premium learning centre in Stretford, Manchester — offering
-                personalised lessons for 11+, KS2, KS3, GCSE, A-Level and Degree-level students
-                across Maths, English and Science.
+                Qualified and experienced teachers offering expert online and private tuition
+                in Maths, Sciences, English, Engineering, Business and 11+ exams — from KS2
+                through to Degree level. With interactive tools, live problem-solving and
+                recorded lessons, we boost grades with personalised support every step of the way.
               </p>
             </Reveal>
             <Reveal delay={380}>
@@ -83,13 +84,14 @@ export default function HomePage() {
               </p>
             </Reveal>
 
-            <Reveal stagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+            <Reveal stagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
               {[
                 { name: '11+', icon: '✎', subs: 'Maths • English • Reasoning', color: '#f5b72f' },
                 { name: 'KS2', icon: '★', subs: 'Core Foundations', color: '#a78bfa' },
                 { name: 'KS3', icon: '◆', subs: 'Maths • English • Science', color: '#22d3ee' },
                 { name: 'GCSE', icon: '◉', subs: 'All Core Subjects', color: '#34d399' },
-                { name: 'A-Level', icon: '▲', subs: 'Sciences • Maths', color: '#ec4899' }
+                { name: 'A-Level', icon: '▲', subs: 'Sciences • Maths', color: '#ec4899' },
+                { name: 'Degree', icon: '🎓', subs: 'Engineering • Business', color: '#f59e0b' }
               ].map((l) => (
                 <GlassCard key={l.name} className="text-center !p-7">
                   <div
@@ -124,7 +126,7 @@ export default function HomePage() {
               </p>
             </Reveal>
 
-            <Reveal stagger className="grid md:grid-cols-3 gap-6">
+            <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
                   icon: '∑',
@@ -149,6 +151,14 @@ export default function HomePage() {
                   glow: 'rgba(34, 211, 238, 0.2)',
                   desc: 'Reading comprehension, creative writing, grammar and literature — communicate with clarity and confidence.',
                   levels: '11+ • KS2 • KS3 • GCSE'
+                },
+                {
+                  icon: '⚙',
+                  name: 'Engineering & Business',
+                  grad: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  glow: 'rgba(245, 158, 11, 0.2)',
+                  desc: 'Specialist tuition in Engineering and Business subjects for GCSE, A-Level and Degree-level students.',
+                  levels: 'GCSE • A-Level • Degree'
                 }
               ].map((s) => (
                 <GlassCard key={s.name} className="!p-8 flex flex-col group">
@@ -183,22 +193,27 @@ export default function HomePage() {
               </h2>
             </Reveal>
 
-            <Reveal stagger className="grid md:grid-cols-3 gap-6">
+            <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
                   icon: '💷',
                   title: 'Affordable & Accessible',
-                  desc: 'Budget-friendly rates without compromise. Quality tuition for every family, with flexible payment options.'
+                  desc: 'High-quality tutoring at budget-friendly rates. No hidden fees, with flexible payment plans for every family.'
                 },
                 {
                   icon: '🎓',
                   title: 'Expert, Trusted Educators',
-                  desc: 'Qualified, DBS-checked tutors with 10+ years of teaching experience across the full British curriculum.'
+                  desc: 'Fully qualified, DBS-checked tutors with 10+ years of teaching experience across the British National Curriculum.'
+                },
+                {
+                  icon: '🖥',
+                  title: 'Interactive & Recorded',
+                  desc: 'Live problem-solving sessions with interactive tools. Every lesson recorded so students can revisit and revise anytime.'
                 },
                 {
                   icon: '📅',
                   title: 'Flexible Schedule',
-                  desc: 'Online or in-person lessons at times that suit you — including evenings and weekends.'
+                  desc: 'Learn at your own pace — online or in-person — with convenient timings including evenings and weekends.'
                 }
               ].map((w) => (
                 <GlassCard key={w.title} className="!p-8">
