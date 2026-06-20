@@ -8,7 +8,7 @@ export default function StructuredData() {
     url: 'https://startutoring.uk',
     logo: 'https://startutoring.uk/logo.png',
     description:
-      'Premium private and online tutoring centre in Stretford, Manchester. Qualified, DBS-checked tutors offering personalised tuition in Maths, English, Science, Engineering and Business for 11+, KS2, KS3, GCSE, A-Level and Degree-level students. Over 10 years of teaching experience.',
+      'Premium private and online tutoring centre in Stretford, Manchester. Qualified, DBS-checked tutors offering personalised tuition in Maths, English, Verbal Reasoning and Non-Verbal Reasoning for 11+ GL Assessment, KS2, KS3, GCSE and A-Level students. Over 10 years of teaching experience.',
     telephone: '+447828186831',
     email: 'info@startutoring.uk',
     address: {
@@ -51,32 +51,22 @@ export default function StructuredData() {
         },
         {
           '@type': 'OfferCatalog',
-          name: 'GCSE Tutoring',
-          itemListElement: [
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE Maths Tutor Manchester' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE Physics Tutor Stretford' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE Chemistry Tutor Manchester' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE Biology Tutor Manchester' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE English Tutor Manchester' } }
-          ]
-        },
-        {
-          '@type': 'OfferCatalog',
-          name: 'A-Level Tutoring',
-          itemListElement: [
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'A-Level Maths Tutor Manchester' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'A-Level Physics Tutor Manchester' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'A-Level Chemistry Tutor Manchester' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'A-Level Biology Tutor Manchester' } }
-          ]
-        },
-        {
-          '@type': 'OfferCatalog',
           name: 'KS2 & KS3 Tutoring',
           itemListElement: [
             { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'KS2 Maths Tutor Stretford' } },
-            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'KS3 Science Tutor Manchester' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'KS3 Maths Tutor Manchester' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'KS2 English Tutor Manchester' } },
             { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Primary School Tutor Manchester' } }
+          ]
+        },
+        {
+          '@type': 'OfferCatalog',
+          name: 'GCSE & A-Level Tutoring',
+          itemListElement: [
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE Maths Tutor Manchester' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'GCSE English Tutor Manchester' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'A-Level Maths Tutor Manchester' } },
+            { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'A-Level English Tutor Manchester' } }
           ]
         }
       ]
@@ -129,7 +119,7 @@ export default function StructuredData() {
         name: 'What subjects do you cover for GCSE and A-Level?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'We cover Maths, Physics, Chemistry, Biology, and English for GCSE. For A-Level, we specialise in Maths, Physics, Chemistry, and Biology. We also offer Engineering and Business at Degree level.'
+          text: 'We specialise in Maths, English, Verbal Reasoning and Non-Verbal Reasoning across all levels. Our core focus is 11+ GL Assessment preparation, with expert tuition available for KS2, KS3, GCSE and A-Level.'
         }
       },
       {

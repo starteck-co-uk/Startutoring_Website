@@ -18,8 +18,9 @@ interface QuizRow {
 
 const SUBJECT_COLORS: Record<string, string> = {
   Maths: '#a78bfa',
-  Science: '#ec4899',
-  English: '#22d3ee'
+  English: '#22d3ee',
+  'Verbal Reasoning': '#f59e0b',
+  'Non-Verbal Reasoning': '#ec4899'
 };
 
 export default function AnalyticsPage() {

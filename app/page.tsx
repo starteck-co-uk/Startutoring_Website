@@ -62,9 +62,10 @@ export default function HomePage() {
             <Reveal delay={250}>
               <p className="mt-8 text-base md:text-lg text-ink-soft max-w-2xl mx-auto leading-relaxed">
                 Qualified and experienced teachers offering expert online and private tuition
-                in Maths, Sciences, English, Engineering, Business and 11+ exams — from KS2
-                through to Degree level. With interactive tools, live problem-solving and
-                recorded lessons, we boost grades with personalised support every step of the way.
+                in Maths, English, Verbal Reasoning and Non-Verbal Reasoning — specialising in
+                11+ GL Assessment preparation, KS2 through to A-Level. With interactive tools,
+                live problem-solving and recorded lessons, we boost grades with personalised
+                support every step of the way.
               </p>
             </Reveal>
             <Reveal delay={380}>
@@ -122,10 +123,10 @@ export default function HomePage() {
               {[
                 { name: '11+', subs: 'Maths, English & Reasoning', color: '#f5b72f' },
                 { name: 'KS2', subs: 'Core Foundations', color: '#a78bfa' },
-                { name: 'KS3', subs: 'Maths, English & Science', color: '#22d3ee' },
-                { name: 'GCSE', subs: 'All Core Subjects', color: '#34d399' },
-                { name: 'A-Level', subs: 'Sciences & Maths', color: '#ec4899' },
-                { name: 'Degree', subs: 'Engineering & Business', color: '#f59e0b' }
+                { name: 'KS3', subs: 'Maths, English & Reasoning', color: '#22d3ee' },
+                { name: 'GCSE', subs: 'Maths & English', color: '#34d399' },
+                { name: 'A-Level', subs: 'Maths & English', color: '#ec4899' },
+                { name: 'Degree', subs: 'Specialist Tuition', color: '#f59e0b' }
               ].map((l) => (
                 <GlassCard key={l.name} className="text-center !p-7">
                   <div
@@ -322,8 +323,8 @@ export default function HomePage() {
                 </h2>
                 <p className="text-ink-soft mt-6 leading-relaxed">
                   Every student gets free access to our dedicated portal. Take auto-generated
-                  quizzes in Maths, Science and English — graded instantly, with full explanations
-                  and progress analytics.
+                  quizzes in Maths, English, Verbal Reasoning and Non-Verbal Reasoning — graded
+                  instantly, with full explanations and progress analytics.
                 </p>
                 <ul className="mt-6 space-y-3">
                   {[
@@ -489,7 +490,7 @@ export default function HomePage() {
                 },
                 {
                   q: 'What subjects do you cover for GCSE and A-Level?',
-                  a: 'We cover Maths, Physics, Chemistry, Biology, and English for GCSE. For A-Level, we specialise in Maths, Physics, Chemistry, and Biology. We also offer Engineering and Business at Degree level.'
+                  a: 'We specialise in Maths, English, Verbal Reasoning and Non-Verbal Reasoning across all levels. Our core focus is 11+ GL Assessment preparation, with expert tuition available for KS2, KS3, GCSE and A-Level.'
                 },
                 {
                   q: 'How does the free assessment work?',

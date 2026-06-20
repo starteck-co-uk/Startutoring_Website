@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s | Star Tutoring — Stretford, Manchester'
   },
   description:
-    'Qualified private tutors in Stretford, Manchester. 10+ years experience, DBS-checked. Expert tuition in Maths, English, Science, Engineering & Business for 11+, KS2, KS3, GCSE, A-Level and Degree-level students. Book a free assessment today.',
+    'Qualified private tutors in Stretford, Manchester. 10+ years experience, DBS-checked. Expert tuition in Maths, English, Verbal Reasoning & Non-Verbal Reasoning for 11+ GL Assessment, KS2, KS3, GCSE and A-Level students. Book a free assessment today.',
   keywords: [
     'tutoring Manchester',
     'tutor Stretford',
@@ -38,7 +38,8 @@ export const metadata: Metadata = {
     'A-Level tutor Manchester',
     'Maths tutor Manchester',
     'English tutor Manchester',
-    'Science tutor Manchester',
+    'verbal reasoning tutor Manchester',
+    'non-verbal reasoning tutor Manchester',
     'Physics tutor Manchester',
     'Chemistry tutor Manchester',
     'Biology tutor Manchester',
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Star Tutoring — Private Tutors in Stretford, Manchester',
     description:
-      'Qualified, DBS-checked tutors with 10+ years experience. Maths, English, Science, 11+, GCSE, A-Level. Book a free assessment today.',
+      'Qualified, DBS-checked tutors with 10+ years experience. Maths, English, Verbal & Non-Verbal Reasoning, 11+ GL Assessment, GCSE, A-Level. Book a free assessment today.',
     type: 'website',
     locale: 'en_GB',
     siteName: 'Star Tutoring',

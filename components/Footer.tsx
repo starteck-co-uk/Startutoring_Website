@@ -51,10 +51,10 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-ink-soft text-sm">
               <li>Maths</li>
-              <li>Science (Physics, Chemistry, Biology)</li>
               <li>English</li>
-              <li>11+ Preparation</li>
-              <li>Engineering & Business</li>
+              <li>Verbal Reasoning</li>
+              <li>Non-Verbal Reasoning</li>
+              <li>11+ GL Assessment</li>
             </ul>
           </div>
 
