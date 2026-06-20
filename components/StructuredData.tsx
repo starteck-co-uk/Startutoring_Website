@@ -1,5 +1,5 @@
 export default function StructuredData() {
-  const jsonLd = {
+  const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
     '@id': 'https://startutoring.uk',
@@ -104,10 +104,113 @@ export default function StructuredData() {
     }
   };
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'How much does private tutoring in Manchester cost?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Our rates are designed to be affordable for every family. We offer flexible payment plans with no hidden fees. Contact us for a personalised quote based on your child\'s needs and schedule.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Do you offer online tutoring as well as in-person?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! We offer both online and in-person tutoring from our centre in Stretford, Manchester. Online sessions use interactive tools and every lesson is recorded so students can revisit material anytime.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What subjects do you cover for GCSE and A-Level?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'We cover Maths, Physics, Chemistry, Biology, and English for GCSE. For A-Level, we specialise in Maths, Physics, Chemistry, and Biology. We also offer Engineering and Business at Degree level.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How does the free assessment work?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'We invite your child for a friendly, no-pressure assessment to understand their current level, strengths, and areas to improve. Based on this, we create a personalised learning plan tailored to their goals.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Are your tutors qualified and DBS checked?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Absolutely. All our tutors are fully qualified with relevant degrees, have 10+ years of teaching experience, and are DBS-checked. Our director holds degrees in Electronics Engineering, International Business Management, and Educational Leadership.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Do you prepare students for the 11+ exam in Manchester?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, we run a structured 11+ preparation programme covering Maths, English, Verbal Reasoning, and Non-Verbal Reasoning. This includes weekly mock exams, detailed feedback, and exam technique training.'
+        }
+      }
+    ]
+  };
+
+  const localBusinessJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'Star Tutoring',
+    image: 'https://startutoring.uk/logo.png',
+    '@id': 'https://startutoring.uk/#localbusiness',
+    url: 'https://startutoring.uk',
+    telephone: '+447828186831',
+    priceRange: '$$',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '1st Floor, 2 Urmston Lane',
+      addressLocality: 'Stretford',
+      addressRegion: 'Greater Manchester',
+      postalCode: 'M32 9BP',
+      addressCountry: 'GB'
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 53.4457974,
+      longitude: -2.3141703
+    },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '09:00',
+        closes: '20:00'
+      },
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Saturday', 'Sunday'],
+        opens: '10:00',
+        closes: '18:00'
+      }
+    ]
+  };
+
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+      />
+    </>
   );
 }

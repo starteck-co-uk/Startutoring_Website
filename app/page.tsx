@@ -4,6 +4,34 @@ import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
 import StarField from '@/components/StarField';
+import {
+  GraduationCap,
+  ShieldCheck,
+  TrendingUp,
+  PoundSterling,
+  Monitor,
+  CalendarDays,
+  CheckCircle2,
+  Sparkles,
+  BookOpen,
+  Zap,
+  Settings,
+  PenTool,
+  Star,
+  Diamond,
+  Circle,
+  Triangle,
+  Award
+} from 'lucide-react';
+
+const levelIcons: Record<string, React.ReactNode> = {
+  '11+': <PenTool className="w-6 h-6" />,
+  'KS2': <Star className="w-6 h-6" />,
+  'KS3': <Diamond className="w-6 h-6" />,
+  'GCSE': <Circle className="w-6 h-6" />,
+  'A-Level': <Triangle className="w-6 h-6" />,
+  'Degree': <GraduationCap className="w-6 h-6" />
+};
 
 export default function HomePage() {
   return (
@@ -13,11 +41,13 @@ export default function HomePage() {
         {/* ============== HERO ============== */}
         <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-5">
           <StarField count={10} />
-          {/* Hero ambient glow */}
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-gold/5 blur-[120px] pointer-events-none" />
           <div className="container-xl relative z-10 text-center">
             <Reveal>
-              <span className="eyebrow">★ Trusted in Stretford for 10+ Years</span>
+              <span className="eyebrow flex items-center gap-2 justify-center">
+                <Sparkles className="w-3.5 h-3.5" />
+                Trusted in Stretford for 10+ Years
+              </span>
             </Reveal>
             <Reveal delay={120}>
               <h1 className="font-serif text-[44px] sm:text-[64px] lg:text-[86px] leading-[0.92] font-semibold mt-3 tracking-tight">
@@ -37,7 +67,8 @@ export default function HomePage() {
             <Reveal delay={380}>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/book-assessment" className="btn btn-gold text-base">
-                  Book Free Assessment →
+                  Book Free Assessment
+                  <TrendingUp className="w-4 h-4" />
                 </Link>
                 <Link href="/courses" className="btn btn-ghost text-base">
                   Explore Courses
@@ -48,15 +79,15 @@ export default function HomePage() {
             <Reveal delay={520}>
               <div className="mt-16 flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
                 {[
-                  { icon: '🎓', label: '10+ Years Experience' },
-                  { icon: '🛡', label: 'DBS Checked' },
-                  { icon: '📈', label: 'Guaranteed Results' }
+                  { icon: <GraduationCap className="w-5 h-5 text-gold" />, label: '10+ Years Experience' },
+                  { icon: <ShieldCheck className="w-5 h-5 text-gold" />, label: 'DBS Checked' },
+                  { icon: <TrendingUp className="w-5 h-5 text-gold" />, label: 'Guaranteed Results' }
                 ].map((t) => (
                   <div
                     key={t.label}
                     className="flex items-center gap-2.5 px-5 py-3 rounded-full glass"
                   >
-                    <span className="text-lg">{t.icon}</span>
+                    {t.icon}
                     <span className="text-ink-soft font-medium">{t.label}</span>
                   </div>
                 ))}
@@ -86,16 +117,16 @@ export default function HomePage() {
 
             <Reveal stagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
               {[
-                { name: '11+', icon: '✎', subs: 'Maths • English • Reasoning', color: '#f5b72f' },
-                { name: 'KS2', icon: '★', subs: 'Core Foundations', color: '#a78bfa' },
-                { name: 'KS3', icon: '◆', subs: 'Maths • English • Science', color: '#22d3ee' },
-                { name: 'GCSE', icon: '◉', subs: 'All Core Subjects', color: '#34d399' },
-                { name: 'A-Level', icon: '▲', subs: 'Sciences • Maths', color: '#ec4899' },
-                { name: 'Degree', icon: '🎓', subs: 'Engineering • Business', color: '#f59e0b' }
+                { name: '11+', subs: 'Maths, English & Reasoning', color: '#f5b72f' },
+                { name: 'KS2', subs: 'Core Foundations', color: '#a78bfa' },
+                { name: 'KS3', subs: 'Maths, English & Science', color: '#22d3ee' },
+                { name: 'GCSE', subs: 'All Core Subjects', color: '#34d399' },
+                { name: 'A-Level', subs: 'Sciences & Maths', color: '#ec4899' },
+                { name: 'Degree', subs: 'Engineering & Business', color: '#f59e0b' }
               ].map((l) => (
                 <GlassCard key={l.name} className="text-center !p-7">
                   <div
-                    className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 transition-transform duration-300 hover:scale-110"
+                    className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-4 transition-transform duration-300 hover:scale-110"
                     style={{
                       background: `linear-gradient(135deg, ${l.color}25, ${l.color}08)`,
                       border: `1px solid ${l.color}35`,
@@ -103,7 +134,7 @@ export default function HomePage() {
                       boxShadow: `0 8px 24px -8px ${l.color}25`
                     }}
                   >
-                    {l.icon}
+                    {levelIcons[l.name]}
                   </div>
                   <h3 className="font-serif text-xl font-semibold">{l.name}</h3>
                   <p className="text-xs text-ink-muted mt-2">{l.subs}</p>
@@ -129,41 +160,41 @@ export default function HomePage() {
             <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  icon: '∑',
+                  icon: <span className="text-3xl font-bold">&#931;</span>,
                   name: 'Maths',
                   grad: 'linear-gradient(135deg, #a78bfa, #6366f1)',
                   glow: 'rgba(167, 139, 250, 0.2)',
                   desc: 'From times tables to calculus — build unshakeable numeric confidence and problem-solving skills.',
-                  levels: '11+ • KS2 • KS3 • GCSE • A-Level • Degree'
+                  levels: '11+, KS2, KS3, GCSE, A-Level, Degree'
                 },
                 {
-                  icon: '⚡',
+                  icon: <Zap className="w-7 h-7" />,
                   name: 'Science',
                   grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
                   glow: 'rgba(236, 72, 153, 0.2)',
                   desc: 'Physics, Chemistry and Biology — interactive experiments and exam-focused revision techniques.',
-                  levels: 'KS3 • GCSE • A-Level'
+                  levels: 'KS3, GCSE, A-Level'
                 },
                 {
-                  icon: '📖',
+                  icon: <BookOpen className="w-7 h-7" />,
                   name: 'English',
                   grad: 'linear-gradient(135deg, #22d3ee, #3b82f6)',
                   glow: 'rgba(34, 211, 238, 0.2)',
                   desc: 'Reading comprehension, creative writing, grammar and literature — communicate with clarity and confidence.',
-                  levels: '11+ • KS2 • KS3 • GCSE'
+                  levels: '11+, KS2, KS3, GCSE'
                 },
                 {
-                  icon: '⚙',
+                  icon: <Settings className="w-7 h-7" />,
                   name: 'Engineering & Business',
                   grad: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   glow: 'rgba(245, 158, 11, 0.2)',
                   desc: 'Specialist tuition in Engineering and Business subjects for GCSE, A-Level and Degree-level students.',
-                  levels: 'GCSE • A-Level • Degree'
+                  levels: 'GCSE, A-Level, Degree'
                 }
               ].map((s) => (
                 <GlassCard key={s.name} className="!p-8 flex flex-col group">
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-bold text-white mb-6 transition-transform duration-300 group-hover:scale-105"
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-6 transition-transform duration-300 group-hover:scale-105"
                     style={{ background: s.grad, boxShadow: `0 12px 32px -8px ${s.glow}` }}
                   >
                     {s.icon}
@@ -175,7 +206,8 @@ export default function HomePage() {
                     href="/courses"
                     className="mt-5 text-gold text-sm font-semibold inline-flex items-center gap-1 hover:gap-2 transition-all"
                   >
-                    Start Learning →
+                    Start Learning
+                    <TrendingUp className="w-3.5 h-3.5" />
                   </Link>
                 </GlassCard>
               ))}
@@ -196,28 +228,28 @@ export default function HomePage() {
             <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  icon: '💷',
+                  icon: <PoundSterling className="w-6 h-6 text-gold" />,
                   title: 'Affordable & Accessible',
                   desc: 'High-quality tutoring at budget-friendly rates. No hidden fees, with flexible payment plans for every family.'
                 },
                 {
-                  icon: '🎓',
+                  icon: <GraduationCap className="w-6 h-6 text-gold" />,
                   title: 'Expert, Trusted Educators',
                   desc: 'Fully qualified, DBS-checked tutors with 10+ years of teaching experience across the British National Curriculum.'
                 },
                 {
-                  icon: '🖥',
+                  icon: <Monitor className="w-6 h-6 text-gold" />,
                   title: 'Interactive & Recorded',
                   desc: 'Live problem-solving sessions with interactive tools. Every lesson recorded so students can revisit and revise anytime.'
                 },
                 {
-                  icon: '📅',
+                  icon: <CalendarDays className="w-6 h-6 text-gold" />,
                   title: 'Flexible Schedule',
                   desc: 'Learn at your own pace — online or in-person — with convenient timings including evenings and weekends.'
                 }
               ].map((w) => (
                 <GlassCard key={w.title} className="!p-8">
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 bg-gold-dim border border-gold/25 shadow-[0_8px_20px_-8px_rgba(245,183,47,0.2)]">
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 bg-gold-dim border border-gold/25 shadow-[0_8px_20px_-8px_rgba(245,183,47,0.2)]">
                     {w.icon}
                   </div>
                   <h3 className="font-serif text-xl font-semibold">{w.title}</h3>
@@ -298,13 +330,14 @@ export default function HomePage() {
                     'Parent dashboards for oversight'
                   ].map((t) => (
                     <li key={t} className="flex items-start gap-3 text-sm text-ink-soft">
-                      <span className="text-gold text-lg leading-none mt-0.5">✓</span>
+                      <CheckCircle2 className="w-5 h-5 text-gold shrink-0 mt-0.5" />
                       <span>{t}</span>
                     </li>
                   ))}
                 </ul>
                 <Link href="/portal/login" className="btn btn-gold mt-8">
-                  Access Student Portal →
+                  Access Student Portal
+                  <TrendingUp className="w-4 h-4" />
                 </Link>
               </Reveal>
 
@@ -318,7 +351,10 @@ export default function HomePage() {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <p className="text-xs text-ink-muted uppercase tracking-wider">Welcome back</p>
-                        <p className="font-serif text-xl font-semibold">Amara ★</p>
+                        <p className="font-serif text-xl font-semibold flex items-center gap-1.5">
+                          Amara
+                          <Sparkles className="w-4 h-4 text-gold" />
+                        </p>
                       </div>
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center font-semibold"
@@ -346,7 +382,10 @@ export default function HomePage() {
                     <div className="rounded-xl p-4 border border-white/6" style={{ background: 'rgba(255,255,255,0.02)' }}>
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-xs text-ink-muted uppercase tracking-wider">Score Trend</p>
-                        <span className="text-xs text-ok">↑ 12%</span>
+                        <span className="text-xs text-ok flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" />
+                          12%
+                        </span>
                       </div>
                       <svg viewBox="0 0 200 60" className="w-full h-16">
                         <defs>
@@ -394,7 +433,7 @@ export default function HomePage() {
                   quote:
                     'My son went from a 4 to a 7 in GCSE Maths in just six months. The tutors at Star are patient, knowledgeable and make learning genuinely enjoyable.',
                   name: 'Sarah H.',
-                  role: 'Parent • Stretford'
+                  role: 'Parent, Stretford'
                 },
                 {
                   quote:
@@ -406,15 +445,65 @@ export default function HomePage() {
                   quote:
                     'Finally an A-Level Physics tutor who actually explains the why. My grades jumped from a C to an A* and I got into my dream university.',
                   name: 'James M.',
-                  role: 'Student • Manchester'
+                  role: 'Student, Manchester'
                 }
               ].map((t) => (
                 <GlassCard key={t.name} className="!p-8 glass-shine">
-                  <div className="text-gold text-lg tracking-widest">★★★★★</div>
-                  <p className="text-ink mt-4 leading-relaxed font-serif text-[17px] italic opacity-90">"{t.quote}"</p>
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(i => (
+                      <Star key={i} className="w-4 h-4 text-gold fill-gold" />
+                    ))}
+                  </div>
+                  <p className="text-ink mt-4 leading-relaxed font-serif text-[17px] italic opacity-90">&ldquo;{t.quote}&rdquo;</p>
                   <div className="divider-line my-5" />
                   <p className="font-semibold">{t.name}</p>
                   <p className="text-xs text-ink-muted">{t.role}</p>
+                </GlassCard>
+              ))}
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ============== FAQ (SEO) ============== */}
+        <section className="section section-glow">
+          <div className="container-xl max-w-4xl mx-auto">
+            <Reveal className="text-center mb-14">
+              <span className="eyebrow">Common Questions</span>
+              <h2 className="text-4xl md:text-5xl font-semibold text-gradient">
+                Frequently Asked Questions
+              </h2>
+            </Reveal>
+
+            <Reveal stagger className="space-y-4">
+              {[
+                {
+                  q: 'How much does private tutoring in Manchester cost?',
+                  a: 'Our rates are designed to be affordable for every family. We offer flexible payment plans with no hidden fees. Contact us for a personalised quote based on your child\'s needs and schedule.'
+                },
+                {
+                  q: 'Do you offer online tutoring as well as in-person?',
+                  a: 'Yes! We offer both online and in-person tutoring from our centre in Stretford, Manchester. Online sessions use interactive tools and every lesson is recorded so students can revisit material anytime.'
+                },
+                {
+                  q: 'What subjects do you cover for GCSE and A-Level?',
+                  a: 'We cover Maths, Physics, Chemistry, Biology, and English for GCSE. For A-Level, we specialise in Maths, Physics, Chemistry, and Biology. We also offer Engineering and Business at Degree level.'
+                },
+                {
+                  q: 'How does the free assessment work?',
+                  a: 'We invite your child for a friendly, no-pressure assessment to understand their current level, strengths, and areas to improve. Based on this, we create a personalised learning plan tailored to their goals.'
+                },
+                {
+                  q: 'Are your tutors qualified and DBS checked?',
+                  a: 'Absolutely. All our tutors are fully qualified with relevant degrees, have 10+ years of teaching experience, and are DBS-checked. Our director holds degrees in Electronics Engineering, International Business Management, and Educational Leadership.'
+                },
+                {
+                  q: 'Do you prepare students for the 11+ exam in Manchester?',
+                  a: 'Yes, we run a structured 11+ preparation programme covering Maths, English, Verbal Reasoning, and Non-Verbal Reasoning. This includes weekly mock exams, detailed feedback, and exam technique training.'
+                }
+              ].map((faq, i) => (
+                <GlassCard key={i} className="!p-6" hover={false}>
+                  <h3 className="font-serif text-lg font-semibold">{faq.q}</h3>
+                  <p className="text-ink-soft text-sm mt-2 leading-relaxed">{faq.a}</p>
                 </GlassCard>
               ))}
             </Reveal>
@@ -442,17 +531,18 @@ export default function HomePage() {
                 />
                 <div className="relative">
                   <h2 className="font-serif text-4xl md:text-6xl font-semibold text-[#1a1304]">
-                    Ready to boost your child's grades?
+                    Ready to boost your child&apos;s grades?
                   </h2>
                   <p className="mt-5 text-[#1a1304]/75 text-lg max-w-xl mx-auto">
                     Book a free, no-obligation assessment today and discover how Star Tutoring can
-                    transform your child's learning journey.
+                    transform your child&apos;s learning journey.
                   </p>
                   <Link
                     href="/book-assessment"
                     className="inline-flex items-center gap-2 mt-8 px-8 py-4 rounded-full bg-[#0b1222] text-white font-semibold hover:scale-105 transition-transform shadow-2xl"
                   >
-                    Book Your Free Assessment Today →
+                    Book Your Free Assessment Today
+                    <Award className="w-5 h-5" />
                   </Link>
                 </div>
               </div>

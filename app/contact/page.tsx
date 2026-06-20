@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
+import { MapPin, Phone, Mail, Star, CheckCircle2 } from 'lucide-react';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
@@ -86,8 +87,9 @@ export default function ContactPage() {
                 </p>
 
                 {done && (
-                  <div className="mt-6 p-4 rounded-xl border border-gold/30 bg-gold-dim text-gold-light text-sm">
-                    ✓ Message received. We'll be in touch shortly.
+                  <div className="mt-6 p-4 rounded-xl border border-gold/30 bg-gold-dim text-gold-light text-sm flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    Message received. We&apos;ll be in touch shortly.
                   </div>
                 )}
 
@@ -140,8 +142,8 @@ export default function ContactPage() {
             <Reveal variant="right" stagger className="space-y-5">
               <GlassCard className="!p-8">
                 <div className="flex gap-4 items-start">
-                  <div className="w-12 h-12 rounded-xl bg-gold-dim border border-gold/30 flex items-center justify-center text-xl">
-                    📍
+                  <div className="w-12 h-12 rounded-xl bg-gold-dim border border-gold/30 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-gold" />
                   </div>
                   <div>
                     <h3 className="font-serif text-lg font-semibold">Visit Us</h3>
@@ -156,8 +158,8 @@ export default function ContactPage() {
 
               <GlassCard className="!p-8">
                 <div className="flex gap-4 items-start">
-                  <div className="w-12 h-12 rounded-xl bg-gold-dim border border-gold/30 flex items-center justify-center text-xl">
-                    📞
+                  <div className="w-12 h-12 rounded-xl bg-gold-dim border border-gold/30 flex items-center justify-center">
+                    <Phone className="w-5 h-5 text-gold" />
                   </div>
                   <div>
                     <h3 className="font-serif text-lg font-semibold">Call Us</h3>
@@ -173,8 +175,8 @@ export default function ContactPage() {
 
               <GlassCard className="!p-8">
                 <div className="flex gap-4 items-start">
-                  <div className="w-12 h-12 rounded-xl bg-gold-dim border border-gold/30 flex items-center justify-center text-xl">
-                    ✉
+                  <div className="w-12 h-12 rounded-xl bg-gold-dim border border-gold/30 flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-gold" />
                   </div>
                   <div>
                     <h3 className="font-serif text-lg font-semibold">Email Us</h3>
@@ -246,13 +248,13 @@ export default function ContactPage() {
                           key={star}
                           type="button"
                           onClick={() => setFb({ ...fb, rating: star })}
-                          className={`w-10 h-10 rounded-xl border text-lg transition-all ${
+                          className={`w-10 h-10 rounded-xl border transition-all flex items-center justify-center ${
                             fb.rating >= star
                               ? 'bg-gold-dim border-gold/50 text-gold'
                               : 'border-white/10 text-ink-muted hover:border-white/30'
                           }`}
                         >
-                          ★
+                          <Star className={`w-5 h-5 ${fb.rating >= star ? 'fill-gold' : ''}`} />
                         </button>
                       ))}
                     </div>

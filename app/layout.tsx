@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Fraunces, Outfit } from 'next/font/google';
 import BackgroundEffects from '@/components/BackgroundEffects';
 import StructuredData from '@/components/StructuredData';
+import FloatingCTA from '@/components/FloatingCTA';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="bg-noise" />
         <BackgroundEffects />
         <StructuredData />
+        <FloatingCTA />
         {children}
       </body>
     </html>

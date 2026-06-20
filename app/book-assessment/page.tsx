@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
+import { School, BookOpen, Target, CheckCircle2 } from 'lucide-react';
 
 const subjectOptions = [
   'Maths',
@@ -86,23 +87,23 @@ export default function BookAssessmentPage() {
             <Reveal stagger className="grid md:grid-cols-3 gap-5 mb-12">
               {[
                 {
-                  icon: '🏫',
+                  icon: <School className="w-5 h-5 text-gold" />,
                   title: '11+ / Grammar School',
                   desc: 'Full preparation with mock tests, technique training and weekly practice papers.'
                 },
                 {
-                  icon: '📚',
+                  icon: <BookOpen className="w-5 h-5 text-gold" />,
                   title: 'Primary School',
                   desc: 'Daily worksheets and personalised support covering all core KS1 & KS2 topics.'
                 },
                 {
-                  icon: '🎯',
+                  icon: <Target className="w-5 h-5 text-gold" />,
                   title: 'Secondary & GCSE',
                   desc: 'Targeted GCSE revision, past-paper practice and exam technique mastery.'
                 }
               ].map((c) => (
                 <GlassCard key={c.title} className="!p-7">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 bg-gold-dim border border-gold/30">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gold-dim border border-gold/30">
                     {c.icon}
                   </div>
                   <h3 className="font-serif text-xl font-semibold">{c.title}</h3>
@@ -115,8 +116,8 @@ export default function BookAssessmentPage() {
               <GlassCard className="!p-8 md:!p-12 max-w-4xl mx-auto">
                 {done ? (
                   <div className="text-center py-10">
-                    <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl bg-gold-dim border border-gold/40 text-gold mb-6">
-                      ✓
+                    <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-gold-dim border border-gold/40 text-gold mb-6">
+                      <CheckCircle2 className="w-10 h-10" />
                     </div>
                     <h2 className="font-serif text-3xl md:text-4xl font-semibold text-gradient">
                       Thank you!

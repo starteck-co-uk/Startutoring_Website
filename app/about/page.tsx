@@ -3,9 +3,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
+import { BookOpen, Zap, PenTool } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'About Us — 10+ Years of Teaching Excellence in Stretford',
+  title: 'About Us — 10+ Years of Teaching Excellence in Stretford, Manchester',
   description:
     'Star Tutoring is led by a director with degrees in Electronics Engineering, International Business Management, and Educational Leadership. Qualified, DBS-checked tutors with 10+ years of experience in Stretford, Manchester.',
   alternates: { canonical: 'https://startutoring.uk/about' }
@@ -25,7 +26,7 @@ export default function AboutPage() {
               </h1>
               <p className="text-ink-soft max-w-2xl mx-auto mt-6 text-lg">
                 A decade of helping students achieve their academic dreams, right in the heart of
-                Stretford.
+                Stretford, Manchester.
               </p>
             </Reveal>
           </div>
@@ -55,7 +56,7 @@ export default function AboutPage() {
                   <p>
                     Based at 1st Floor, 2 Urmston Lane, Stretford, we offer both in-person
                     and online lessons. Every tutor is fully qualified, DBS-checked, and personally
-                    committed to each student's progress. Our teaching methods include interactive
+                    committed to each student&apos;s progress. Our teaching methods include interactive
                     tools, live problem-solving, and recorded lessons that students can revisit anytime.
                   </p>
                 </div>
@@ -88,20 +89,20 @@ export default function AboutPage() {
                 Teaching, the right way
               </h2>
               <p className="text-ink-soft mt-4">
-                We believe every child learns differently. Our tutors adapt to your child's pace,
+                We believe every child learns differently. Our tutors adapt to your child&apos;s pace,
                 interests and learning style — making every lesson engaging and effective.
               </p>
             </Reveal>
 
             <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { icon: '∑', name: 'Maths', desc: 'From arithmetic to calculus — build confidence step by step.' },
-                { icon: '📖', name: 'English', desc: 'Comprehension, writing, grammar and literature.' },
-                { icon: '⚡', name: 'Science', desc: 'Physics, Chemistry and Biology made accessible.' },
-                { icon: '✎', name: '11+ Prep', desc: 'Grammar school success through structured practice.' }
+                { icon: <span className="text-2xl font-bold text-gold">&#931;</span>, name: 'Maths', desc: 'From arithmetic to calculus — build confidence step by step.' },
+                { icon: <BookOpen className="w-6 h-6 text-gold" />, name: 'English', desc: 'Comprehension, writing, grammar and literature.' },
+                { icon: <Zap className="w-6 h-6 text-gold" />, name: 'Science', desc: 'Physics, Chemistry and Biology made accessible.' },
+                { icon: <PenTool className="w-6 h-6 text-gold" />, name: '11+ Prep', desc: 'Grammar school success through structured practice.' }
               ].map((s) => (
                 <GlassCard key={s.name} className="!p-7">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 bg-gold-dim border border-gold/30 text-gold">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gold-dim border border-gold/30">
                     {s.icon}
                   </div>
                   <h3 className="font-serif text-xl font-semibold">{s.name}</h3>

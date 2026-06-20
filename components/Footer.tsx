@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Logo from './Logo';
+import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -22,7 +23,7 @@ export default function Footer() {
                 <a
                   key={s}
                   href="#"
-                  className="w-10 h-10 rounded-full border border-white/8 flex items-center justify-center text-xs text-ink-soft hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all duration-300"
+                  className="w-10 h-10 rounded-full border border-white/8 flex items-center justify-center text-xs font-semibold text-ink-soft hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all duration-300"
                   aria-label={label}
                 >
                   {s}
@@ -63,15 +64,15 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3 text-ink-soft text-sm">
               <li className="flex gap-2.5">
-                <span className="text-gold">📍</span>
+                <MapPin className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                 <span>1st Floor, 2 Urmston Lane,<br/>Stretford, Manchester, M32 9BP</span>
               </li>
               <li className="flex gap-2.5">
-                <span className="text-gold">📞</span>
+                <Phone className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                 <a href="tel:+447828186831" className="hover:text-white transition-colors duration-200">+44 7828 186831</a>
               </li>
               <li className="flex gap-2.5">
-                <span className="text-gold">✉</span>
+                <Mail className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                 <a href="mailto:info@startutoring.uk" className="hover:text-white transition-colors duration-200">info@startutoring.uk</a>
               </li>
             </ul>
@@ -89,7 +90,7 @@ export default function Footer() {
 
         <div className="divider-line my-6" />
         <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-ink-muted px-2">
-          <p>© 2025 Star Tutoring. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Star Tutoring. All Rights Reserved.</p>
           <p>Crafted with care in Stretford, Manchester.</p>
         </div>
       </div>

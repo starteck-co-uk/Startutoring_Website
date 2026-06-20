@@ -536,8 +536,65 @@ textarea.field {
   border-radius: inherit;
 }
 
+/* ========== Loading Skeleton ========== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+.skeleton-text {
+  height: 1em;
+  border-radius: 6px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+/* ========== Floating CTA (Lead Gen) ========== */
+.floating-cta {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 40;
+  animation: fadeUp 0.6s ease-out both;
+  animation-delay: 3s;
+}
+
+/* ========== Enhanced select ========== */
+select.field {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+select.field option {
+  background: #0c1224;
+  color: var(--ink);
+  padding: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .section {
     padding: 3.5rem 1rem;
+  }
+  .floating-cta {
+    bottom: 1rem;
+    right: 1rem;
   }
 }

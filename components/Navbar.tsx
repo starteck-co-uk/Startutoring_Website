@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
 const links = [
   { href: '/', label: 'Home' },
@@ -52,15 +53,16 @@ export default function Navbar() {
             href="/portal/login"
             className="btn btn-gold !py-2 !px-5 text-sm"
           >
-            Student Portal →
+            Student Portal
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </nav>
         <button
-          className="lg:hidden w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-xl hover:border-gold/30 transition-colors"
+          className="lg:hidden w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-gold/30 transition-colors"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
         >
-          {open ? '×' : '☰'}
+          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
@@ -81,7 +83,8 @@ export default function Navbar() {
             onClick={() => setOpen(false)}
             className="btn btn-gold w-full justify-center mt-3"
           >
-            Student Portal →
+            Student Portal
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       )}

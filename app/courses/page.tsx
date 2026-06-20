@@ -4,9 +4,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
+import { PenTool, Star, Circle, Triangle, PoundSterling, GraduationCap, CalendarDays, ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Courses — 11+, KS2, KS3, GCSE, A-Level Tutoring',
+  title: 'Courses — 11+, KS2, KS3, GCSE, A-Level Tutoring in Manchester',
   description:
     'Expert tutoring courses in Stretford, Manchester. 11+ preparation with mock exams, KS2 & KS3 foundations, GCSE guaranteed grade improvement, A-Level sciences and Maths. Affordable rates, DBS-checked tutors.',
   alternates: { canonical: 'https://startutoring.uk/courses' }
@@ -17,7 +18,7 @@ const courses = [
     id: '11plus',
     badge: 'Complete Preparation',
     title: '11+ Preparation',
-    icon: '✎',
+    icon: <PenTool className="w-7 h-7" />,
     grad: 'linear-gradient(135deg, #f5b72f, #ffd166)',
     subjects: ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning'],
     feature: 'Full mock exam practice with detailed feedback after every test.',
@@ -27,7 +28,7 @@ const courses = [
     id: 'ks2-3',
     badge: 'Build Strong Foundations',
     title: 'KS2 & KS3',
-    icon: '★',
+    icon: <Star className="w-7 h-7" />,
     grad: 'linear-gradient(135deg, #a78bfa, #6366f1)',
     subjects: ['Maths', 'English', 'Physics', 'Chemistry', 'Biology'],
     feature: 'Daily worksheets, weekly homework and fortnightly mock tests.',
@@ -37,7 +38,7 @@ const courses = [
     id: 'gcse',
     badge: 'Guaranteed Grade Improvement',
     title: 'GCSE',
-    icon: '◉',
+    icon: <Circle className="w-7 h-7" />,
     grad: 'linear-gradient(135deg, #34d399, #10b981)',
     subjects: ['Maths', 'Physics', 'Chemistry', 'Biology', 'English'],
     feature: 'Past-paper mastery and exam technique training.',
@@ -47,7 +48,7 @@ const courses = [
     id: 'alevel',
     badge: 'University Ready',
     title: 'A-Level',
-    icon: '▲',
+    icon: <Triangle className="w-7 h-7" />,
     grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
     subjects: ['Maths', 'Physics', 'Chemistry', 'Biology'],
     feature: 'UCAS support and personalised university prep included.',
@@ -80,7 +81,7 @@ export default function CoursesPage() {
                 <GlassCard key={c.id} className="!p-9 flex flex-col">
                   <div className="flex items-start justify-between gap-4 mb-6">
                     <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-bold text-white"
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-white"
                       style={{ background: c.grad, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.6)' }}
                     >
                       {c.icon}
@@ -104,12 +105,13 @@ export default function CoursesPage() {
                   </div>
 
                   <div className="mt-6 p-4 rounded-xl bg-gold-dim border border-gold/20 flex items-start gap-3">
-                    <span className="text-gold text-lg">★</span>
+                    <Star className="w-5 h-5 text-gold shrink-0 mt-0.5" />
                     <p className="text-sm text-ink">{c.feature}</p>
                   </div>
 
                   <Link href="/book-assessment" className="btn btn-gold mt-7 self-start">
-                    Enquire Now →
+                    Enquire Now
+                    <ArrowRight className="w-4 h-4" />
                   </Link>
                 </GlassCard>
               ))}
@@ -126,12 +128,12 @@ export default function CoursesPage() {
 
             <Reveal stagger className="grid md:grid-cols-3 gap-6">
               {[
-                { icon: '💷', title: 'Affordable & Accessible', desc: 'Budget-friendly pricing with no hidden fees. Flexible payment plans available.' },
-                { icon: '🎓', title: 'Expert, Trusted Educators', desc: 'Qualified, DBS-checked teachers with 10+ years of classroom experience.' },
-                { icon: '📅', title: 'Flexible Schedule', desc: 'Online or in-person sessions at times that work for your family.' }
+                { icon: <PoundSterling className="w-6 h-6 text-gold" />, title: 'Affordable & Accessible', desc: 'Budget-friendly pricing with no hidden fees. Flexible payment plans available.' },
+                { icon: <GraduationCap className="w-6 h-6 text-gold" />, title: 'Expert, Trusted Educators', desc: 'Qualified, DBS-checked teachers with 10+ years of classroom experience.' },
+                { icon: <CalendarDays className="w-6 h-6 text-gold" />, title: 'Flexible Schedule', desc: 'Online or in-person sessions at times that work for your family.' }
               ].map((v) => (
                 <GlassCard key={v.title} className="!p-8">
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 bg-gold-dim border border-gold/30">
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 bg-gold-dim border border-gold/30">
                     {v.icon}
                   </div>
                   <h3 className="font-serif text-xl font-semibold">{v.title}</h3>
