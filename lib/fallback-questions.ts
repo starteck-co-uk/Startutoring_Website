@@ -1,8 +1,14 @@
 import type { Question } from './types';
+import {
+  CONTENT_MATHS_11PLUS,
+  CONTENT_VERBAL_11PLUS,
+  CONTENT_ENGLISH_11PLUS,
+  CONTENT_NVR_11PLUS
+} from './content-questions';
 
 type Bank = Record<string, Record<string, Question[]>>;
 
-export const FALLBACK_QUESTIONS: Bank = {
+const BASE_QUESTIONS: Bank = {
   Maths: {
     '11+': [
       {
@@ -165,43 +171,6 @@ export const FALLBACK_QUESTIONS: Bank = {
       }
     ]
   },
-  Science: {
-    '11+': [
-      { text: 'What is the closest planet to the Sun?', options: ['Venus', 'Mercury', 'Earth', 'Mars'], correct: 1, explanation: 'Mercury is the innermost planet of the Solar System.' },
-      { text: 'Which part of the plant makes food?', options: ['Roots', 'Stem', 'Leaves', 'Flowers'], correct: 2, explanation: 'Leaves make food through photosynthesis.' },
-      { text: 'What is H₂O?', options: ['Oxygen', 'Hydrogen', 'Water', 'Salt'], correct: 2, explanation: 'H₂O is the chemical formula for water.' },
-      { text: 'Which force pulls objects down to Earth?', options: ['Friction', 'Gravity', 'Magnetism', 'Tension'], correct: 1, explanation: 'Gravity is the force that attracts objects towards Earth.' },
-      { text: 'How many legs does a spider have?', options: ['6', '8', '10', '12'], correct: 1, explanation: 'Spiders are arachnids and have 8 legs.' }
-    ],
-    KS2: [
-      { text: 'Which gas do plants absorb for photosynthesis?', options: ['Oxygen', 'Nitrogen', 'Carbon dioxide', 'Hydrogen'], correct: 2, explanation: 'Plants take in CO₂ and release O₂ during photosynthesis.' },
-      { text: 'What is the boiling point of water in °C?', options: ['50', '75', '100', '150'], correct: 2, explanation: 'Pure water boils at 100°C at standard atmospheric pressure.' },
-      { text: 'Which organ pumps blood around the body?', options: ['Lungs', 'Heart', 'Liver', 'Kidneys'], correct: 1, explanation: 'The heart pumps blood through the circulatory system.' },
-      { text: 'What is the state of ice?', options: ['Solid', 'Liquid', 'Gas', 'Plasma'], correct: 0, explanation: 'Ice is frozen water — a solid.' },
-      { text: 'Which of these is a carnivore?', options: ['Cow', 'Lion', 'Rabbit', 'Goat'], correct: 1, explanation: 'Lions eat meat, making them carnivores.' }
-    ],
-    KS3: [
-      { text: 'What is the unit of electric current?', options: ['Volt', 'Watt', 'Ampere', 'Ohm'], correct: 2, explanation: 'Electric current is measured in amperes (amps).' },
-      { text: 'Which gas makes up most of Earth\'s atmosphere?', options: ['Oxygen', 'Nitrogen', 'Carbon dioxide', 'Argon'], correct: 1, explanation: 'Roughly 78% of the atmosphere is nitrogen.' },
-      { text: 'What particle has a positive charge?', options: ['Electron', 'Neutron', 'Proton', 'Photon'], correct: 2, explanation: 'Protons are positively charged particles in the nucleus.' },
-      { text: 'Which of these is a renewable energy source?', options: ['Coal', 'Oil', 'Wind', 'Natural gas'], correct: 2, explanation: 'Wind energy is renewable — it does not deplete.' },
-      { text: 'What process turns liquid into gas?', options: ['Melting', 'Freezing', 'Evaporation', 'Condensation'], correct: 2, explanation: 'Evaporation is the change from liquid to gas.' }
-    ],
-    GCSE: [
-      { text: 'What is the formula for kinetic energy?', options: ['mgh', '½mv²', 'mv', 'F × d'], correct: 1, explanation: 'Kinetic energy = ½ × mass × velocity².' },
-      { text: 'Which acid is found in the stomach?', options: ['Sulfuric acid', 'Hydrochloric acid', 'Nitric acid', 'Citric acid'], correct: 1, explanation: 'The stomach produces hydrochloric acid for digestion.' },
-      { text: 'What is the pH of a neutral solution?', options: ['0', '5', '7', '14'], correct: 2, explanation: 'A neutral solution (e.g. pure water) has pH 7.' },
-      { text: 'Which organelle produces energy in a cell?', options: ['Nucleus', 'Ribosome', 'Mitochondrion', 'Vacuole'], correct: 2, explanation: 'Mitochondria produce ATP through respiration.' },
-      { text: 'What is Newton\'s third law?', options: ['F = ma', 'Objects stay at rest', 'Every action has an equal and opposite reaction', 'Energy is conserved'], correct: 2, explanation: 'Newton\'s 3rd law: action = −reaction.' }
-    ],
-    'A-Level': [
-      { text: 'What is Planck\'s constant (h) approximately?', options: ['6.63 × 10⁻³⁴ J·s', '9.11 × 10⁻³¹ kg', '1.6 × 10⁻¹⁹ C', '3 × 10⁸ m/s'], correct: 0, explanation: 'h ≈ 6.63 × 10⁻³⁴ joule-seconds.' },
-      { text: 'What does ΔG < 0 indicate?', options: ['Non-spontaneous', 'Spontaneous', 'Equilibrium', 'Endothermic'], correct: 1, explanation: 'A negative Gibbs free energy means the reaction is spontaneous.' },
-      { text: 'Which enzyme unwinds DNA during replication?', options: ['Ligase', 'Polymerase', 'Helicase', 'Primase'], correct: 2, explanation: 'Helicase unwinds the DNA double helix.' },
-      { text: 'What is the SI unit of magnetic flux density?', options: ['Henry', 'Weber', 'Tesla', 'Gauss'], correct: 2, explanation: 'Magnetic flux density is measured in Tesla.' },
-      { text: 'What is the general formula of an alkane?', options: ['CₙH₂ₙ', 'CₙH₂ₙ₊₂', 'CₙH₂ₙ₋₂', 'CₙHₙ'], correct: 1, explanation: 'Alkanes follow the formula CₙH₂ₙ₊₂.' }
-    ]
-  },
   'Verbal Reasoning': {
     '11+': [
       { text: 'Find the odd one out: Apple, Banana, Carrot, Mango, Grape', options: ['Apple', 'Banana', 'Carrot', 'Mango'], correct: 2, explanation: 'Carrot is a vegetable; the others are all fruits.' },
@@ -314,6 +283,26 @@ export const FALLBACK_QUESTIONS: Bank = {
     ]
   }
 };
+
+// Merge content-parsed questions into the 11+ banks
+function mergeBank(base: Bank): Bank {
+  const merged = { ...base };
+  // Maths 11+
+  merged.Maths = { ...merged.Maths };
+  merged.Maths['11+'] = [...(merged.Maths['11+'] || []), ...CONTENT_MATHS_11PLUS];
+  // Verbal Reasoning 11+
+  merged['Verbal Reasoning'] = { ...merged['Verbal Reasoning'] };
+  merged['Verbal Reasoning']['11+'] = [...(merged['Verbal Reasoning']['11+'] || []), ...CONTENT_VERBAL_11PLUS];
+  // English 11+
+  merged.English = { ...merged.English };
+  merged.English['11+'] = [...(merged.English['11+'] || []), ...CONTENT_ENGLISH_11PLUS];
+  // Non-Verbal Reasoning 11+
+  merged['Non-Verbal Reasoning'] = { ...merged['Non-Verbal Reasoning'] };
+  merged['Non-Verbal Reasoning']['11+'] = [...(merged['Non-Verbal Reasoning']['11+'] || []), ...CONTENT_NVR_11PLUS];
+  return merged;
+}
+
+export const FALLBACK_QUESTIONS: Bank = mergeBank(BASE_QUESTIONS);
 
 export function getFallback(subject: string, level: string, count = 5): Question[] {
   const bank = FALLBACK_QUESTIONS[subject]?.[level] || FALLBACK_QUESTIONS.Maths['KS3'];
