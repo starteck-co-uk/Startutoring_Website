@@ -26,13 +26,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'name, email, and pin required' }, { status: 400 });
     }
 
+    const role = body.role === 'parent' ? 'parent' : 'student';
     const row: any = {
       name,
       email: email.toLowerCase().trim(),
       pin,
-      role: 'student',
+      role,
       grade: body.grade || null,
       parent_name: body.parent_name || null,
+      parent_email: body.parent_email || null,
       avatar: body.avatar || name[0]?.toUpperCase(),
       phone: body.phone || null,
       school_name: body.school_name || null,
@@ -41,7 +43,8 @@ export async function POST(req: NextRequest) {
       areas_to_improve: body.areas_to_improve || null,
       medical_notes: body.medical_notes || null,
       admin_notes: body.admin_notes || null,
-      status: body.status || 'active'
+      status: body.status || 'active',
+      linked_students: body.linked_students || null
     };
 
     const sb = getAdminSupabase() || getSupabase();

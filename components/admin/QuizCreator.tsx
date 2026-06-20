@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import GlassCard from '@/components/GlassCard';
+import { Plus, Trash2, Wand2, PenLine } from 'lucide-react';
 import type { Question } from '@/lib/types';
 
-const SUBJECTS = ['Maths', 'Science', 'English'];
+const SUBJECTS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning', 'Science'];
 const LEVELS = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
 
 interface Props {
@@ -18,13 +19,21 @@ interface ChatMsg {
   content: string;
 }
 
+const EMPTY_QUESTION: Question = {
+  text: '',
+  options: ['', '', '', ''],
+  correct: 0,
+  explanation: ''
+};
+
 export default function QuizCreator({ quizId, onDone, onCancel }: Props) {
   // Step 1 state (setup)
   const [subject, setSubject] = useState('Maths');
-  const [level, setLevel] = useState('GCSE');
+  const [level, setLevel] = useState('11+');
   const [topic, setTopic] = useState('');
   const [title, setTitle] = useState('');
   const [count, setCount] = useState(5);
+  const [mode, setMode] = useState<'ai' | 'manual'>('ai');
 
   // Step 2 state (questions)
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -207,6 +216,20 @@ export default function QuizCreator({ quizId, onDone, onCancel }: Props) {
     setQuestions(updated);
   };
 
+  const addManualQuestion = () => {
+    setQuestions([...questions, { ...EMPTY_QUESTION, options: ['', '', '', ''] }]);
+  };
+
+  const removeQuestion = (idx: number) => {
+    setQuestions(questions.filter((_, i) => i !== idx));
+  };
+
+  const startManual = () => {
+    if (!title) setTitle(`${subject} Quiz — ${level}${topic ? ` (${topic})` : ''}`);
+    setQuestions([{ ...EMPTY_QUESTION, options: ['', '', '', ''] }]);
+    setStep('preview');
+  };
+
   // ─── Setup Step ───
   if (step === 'setup') {
     return (
@@ -216,10 +239,35 @@ export default function QuizCreator({ quizId, onDone, onCancel }: Props) {
           {quizId ? 'Edit Quiz' : 'Create New Quiz'}
         </h2>
         <p className="text-ink-soft text-sm mb-8">
-          Select subject, level, and optionally a topic. AI will generate curriculum-aligned questions.
+          GL Assessment format: multiple-choice questions with 4 options each.
         </p>
 
         <GlassCard className="!p-6 space-y-5" hover={false}>
+          {/* Mode toggle */}
+          <div>
+            <label className="field-label">Creation Mode</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMode('ai')}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition ${
+                  mode === 'ai' ? 'border-gold/60 bg-gold-dim text-gold-light' : 'border-white/10 bg-white/3 text-ink-soft hover:border-white/20'
+                }`}
+              >
+                <Wand2 className="w-4 h-4" />
+                AI Generate
+              </button>
+              <button
+                onClick={() => setMode('manual')}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition ${
+                  mode === 'manual' ? 'border-gold/60 bg-gold-dim text-gold-light' : 'border-white/10 bg-white/3 text-ink-soft hover:border-white/20'
+                }`}
+              >
+                <PenLine className="w-4 h-4" />
+                Manual Entry
+              </button>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="field-label">Subject</label>
@@ -246,30 +294,40 @@ export default function QuizCreator({ quizId, onDone, onCancel }: Props) {
             <p className="text-xs text-ink-muted mt-1">Leave blank for a general quiz across the whole subject.</p>
           </div>
 
-          <div>
-            <label className="field-label">Number of Questions</label>
-            <div className="flex gap-2">
-              {[5, 10, 15].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setCount(n)}
-                  className={`px-4 py-2 rounded-full text-sm border transition ${
-                    count === n ? 'border-gold/60 bg-gold-dim text-gold-light' : 'border-white/10 bg-white/3 text-ink-soft'
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
+          {mode === 'ai' && (
+            <div>
+              <label className="field-label">Number of Questions</label>
+              <div className="flex gap-2">
+                {[5, 10, 15].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setCount(n)}
+                    className={`px-4 py-2 rounded-full text-sm border transition ${
+                      count === n ? 'border-gold/60 bg-gold-dim text-gold-light' : 'border-white/10 bg-white/3 text-ink-soft'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {error && (
             <div className="p-3 rounded-xl border border-red-400/30 bg-red-400/10 text-red-300 text-sm">{error}</div>
           )}
 
-          <button onClick={generate} disabled={generating} className="btn btn-gold disabled:opacity-60">
-            {generating ? 'Generating...' : 'Generate Quiz'}
-          </button>
+          {mode === 'ai' ? (
+            <button onClick={generate} disabled={generating} className="btn btn-gold disabled:opacity-60">
+              <Wand2 className="w-4 h-4" />
+              {generating ? 'Generating...' : 'Generate Quiz with AI'}
+            </button>
+          ) : (
+            <button onClick={startManual} className="btn btn-gold">
+              <PenLine className="w-4 h-4" />
+              Start Adding Questions
+            </button>
+          )}
         </GlassCard>
       </div>
     );
@@ -296,6 +354,12 @@ export default function QuizCreator({ quizId, onDone, onCancel }: Props) {
           </div>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={addManualQuestion}
+            className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-gold/30 transition flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Question
+          </button>
           <button onClick={() => setShowChat(!showChat)} className={`text-xs px-3 py-1.5 rounded-lg border transition ${showChat ? 'border-gold/60 bg-gold-dim text-gold-light' : 'border-white/10 hover:border-gold/30'}`}>
             AI Chat
           </button>
@@ -321,13 +385,23 @@ export default function QuizCreator({ quizId, onDone, onCancel }: Props) {
             <GlassCard key={i} className="!p-6" hover={false} style={{ borderLeft: '4px solid rgba(245,183,47,0.4)' }}>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <span className="text-xs text-ink-muted font-semibold mt-1">Q{i + 1}</span>
-                <button
-                  onClick={() => regenerateQuestion(i)}
-                  disabled={regeneratingIdx === i}
-                  className="text-xs px-2 py-1 rounded border border-white/10 hover:border-gold/30 transition disabled:opacity-50 flex-shrink-0"
-                >
-                  {regeneratingIdx === i ? 'Regenerating...' : 'Regenerate'}
-                </button>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => regenerateQuestion(i)}
+                    disabled={regeneratingIdx === i}
+                    className="text-xs px-2 py-1 rounded border border-white/10 hover:border-gold/30 transition disabled:opacity-50 flex-shrink-0"
+                  >
+                    {regeneratingIdx === i ? 'Regenerating...' : 'Regenerate'}
+                  </button>
+                  {questions.length > 1 && (
+                    <button
+                      onClick={() => removeQuestion(i)}
+                      className="text-xs px-2 py-1 rounded border border-red-400/20 hover:border-red-400/40 text-red-300/70 hover:text-red-300 transition flex-shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <textarea

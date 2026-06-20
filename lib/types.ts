@@ -24,7 +24,7 @@ export interface Student {
   name: string;
   email: string;
   pin: string;
-  role: 'student' | 'admin';
+  role: 'student' | 'parent' | 'admin';
   grade?: string;
   parent_name?: string;
   avatar?: string;
@@ -38,9 +38,11 @@ export interface Student {
   status?: 'active' | 'inactive' | 'paused';
   enrollment_date?: string;
   created_at?: string;
+  parent_email?: string;
+  linked_students?: string[];
 }
 
-export type Subject = 'Maths' | 'Science' | 'English';
+export type Subject = 'Maths' | 'Science' | 'English' | 'Verbal Reasoning' | 'Non-Verbal Reasoning';
 export type Level = '11+' | 'KS2' | 'KS3' | 'GCSE' | 'A-Level';
 export type QuizStatus = 'draft' | 'published' | 'closed';
 

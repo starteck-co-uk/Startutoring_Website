@@ -6,7 +6,7 @@ import type { Student } from '@/lib/types';
 
 type Status = 'active' | 'inactive' | 'paused';
 
-const SUBJECT_OPTIONS = ['Maths', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
+const SUBJECT_OPTIONS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning', 'Science', 'History', 'Geography', 'Computer Science'];
 const LEVEL_OPTIONS = [
   'Year 2 — KS1', 'Year 3 — KS2', 'Year 4 — KS2', 'Year 5 — KS2', 'Year 6 — 11+',
   'Year 7 — KS3', 'Year 8 — KS3', 'Year 9 — KS3',
@@ -326,8 +326,15 @@ function StudentModal({
 
     setSaving(true);
     try {
+      // Create student with an internal email; parent gets the real login email
+      const studentEmail = existing
+        ? form.email
+        : `student-${Date.now()}@star.internal`;
+
       const payload = {
         ...form,
+        email: existing ? form.email : studentEmail,
+        parent_email: form.email,
         role: 'student',
         avatar: form.avatar || form.name[0]?.toUpperCase()
       };
@@ -340,6 +347,30 @@ function StudentModal({
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Failed to save');
+
+      // Auto-create parent login account linked to this student
+      if (!existing && j.student?.id) {
+        try {
+          await fetch('/api/admin/students', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              name: form.parent_name || `Parent of ${form.name}`,
+              email: form.email,
+              pin: form.pin,
+              role: 'parent',
+              grade: form.grade,
+              parent_name: form.parent_name,
+              status: 'active',
+              linked_students: [j.student.id],
+              avatar: (form.parent_name || form.name)[0]?.toUpperCase()
+            })
+          });
+        } catch {
+          // Parent may already exist — not critical
+        }
+      }
+
       onSaved();
     } catch (e: any) {
       setError(e.message);

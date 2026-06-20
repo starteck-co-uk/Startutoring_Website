@@ -7,8 +7,13 @@ import GlassCard from '@/components/GlassCard';
 import SyllabiTab from '@/components/admin/SyllabiTab';
 import QuizzesTab from '@/components/admin/QuizzesTab';
 import StudentsAdminTab from '@/components/admin/StudentsAdminTab';
+import LeadsTab from '@/components/admin/LeadsTab';
+import {
+  LayoutDashboard, BookOpen, FileText, ClipboardList, Mail, Star,
+  Users, Settings, GraduationCap, PenTool, LogOut, Download
+} from 'lucide-react';
 
-type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'settings';
+type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'leads' | 'settings';
 
 interface AdminUser {
   id: string;
@@ -36,7 +41,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'students' || tab === 'feedback') {
+    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'students' || tab === 'feedback' || tab === 'leads') {
       setLoading(false);
       return;
     }
@@ -55,15 +60,16 @@ export default function AdminDashboard() {
 
   if (!user) return null;
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'syllabi', label: 'Syllabi', icon: '📚' },
-    { id: 'quizzes', label: 'Quizzes', icon: '📝' },
-    { id: 'assessments', label: 'Assessments', icon: '📋' },
-    { id: 'contacts', label: 'Messages', icon: '✉' },
-    { id: 'feedback', label: 'Feedback', icon: '⭐' },
-    { id: 'students', label: 'Students', icon: '🎓' },
-    { id: 'settings', label: 'AI Settings', icon: '⚙' }
+  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'syllabi', label: 'Syllabi', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'quizzes', label: 'Quizzes', icon: <FileText className="w-4 h-4" /> },
+    { id: 'assessments', label: 'Assessments', icon: <ClipboardList className="w-4 h-4" /> },
+    { id: 'contacts', label: 'Messages', icon: <Mail className="w-4 h-4" /> },
+    { id: 'feedback', label: 'Feedback', icon: <Star className="w-4 h-4" /> },
+    { id: 'students', label: 'Students', icon: <GraduationCap className="w-4 h-4" /> },
+    { id: 'leads', label: 'Leads', icon: <Download className="w-4 h-4" /> },
+    { id: 'settings', label: 'AI Settings', icon: <Settings className="w-4 h-4" /> }
   ];
 
   return (
@@ -73,10 +79,10 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold text-[#1a1304]"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-[#1a1304]"
               style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)' }}
             >
-              ★
+              <Star className="w-5 h-5 fill-[#1a1304]" />
             </div>
             <div>
               <span className="font-serif text-lg font-semibold text-gradient">Star Tutoring</span>
@@ -85,7 +91,8 @@ export default function AdminDashboard() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-ink-soft hidden md:inline">{user.name}</span>
-            <button onClick={logout} className="text-sm text-ink-muted hover:text-red-300 transition">
+            <button onClick={logout} className="text-sm text-ink-muted hover:text-red-300 transition flex items-center gap-1.5">
+              <LogOut className="w-4 h-4" />
               Logout
             </button>
           </div>
@@ -127,6 +134,7 @@ export default function AdminDashboard() {
             {tab === 'contacts' && <ContactsTab data={data} />}
             {tab === 'feedback' && <FeedbackTab />}
             {tab === 'students' && <StudentsAdminTab />}
+            {tab === 'leads' && <LeadsTab />}
             {tab === 'settings' && <SettingsTab />}
           </>
         )}
@@ -145,10 +153,10 @@ function OverviewTab({ data }: { data: any }) {
         <h2 className="font-serif text-3xl font-semibold text-gradient mb-6">Dashboard</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { l: 'Students', v: c.students, c: '#f5b72f', icon: '🎓' },
-            { l: 'Quizzes Taken', v: c.quizzes, c: '#34d399', icon: '📝' },
-            { l: 'Pending Assessments', v: c.pendingAssessments, c: '#fbbf24', icon: '📋' },
-            { l: 'Unread Messages', v: c.unreadContacts, c: '#f87171', icon: '✉' }
+            { l: 'Students', v: c.students, c: '#f5b72f', icon: <GraduationCap className="w-6 h-6" style={{ color: '#f5b72f' }} /> },
+            { l: 'Quizzes Taken', v: c.quizzes, c: '#34d399', icon: <FileText className="w-6 h-6" style={{ color: '#34d399' }} /> },
+            { l: 'Pending Assessments', v: c.pendingAssessments, c: '#fbbf24', icon: <ClipboardList className="w-6 h-6" style={{ color: '#fbbf24' }} /> },
+            { l: 'Unread Messages', v: c.unreadContacts, c: '#f87171', icon: <Mail className="w-6 h-6" style={{ color: '#f87171' }} /> }
           ].map((s) => (
             <GlassCard key={s.l} className="!p-6">
               <div className="flex items-start justify-between">
@@ -158,7 +166,7 @@ function OverviewTab({ data }: { data: any }) {
                     {s.v}
                   </p>
                 </div>
-                <span className="text-2xl">{s.icon}</span>
+                {s.icon}
               </div>
             </GlassCard>
           ))}
@@ -400,10 +408,8 @@ function FeedbackTab() {
                   <div className="flex items-center gap-3">
                     <h3 className="font-serif text-lg font-semibold">{f.name}</h3>
                     <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} className={star <= f.rating ? 'text-gold' : 'text-ink-muted'}>
-                          ★
-                        </span>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={`w-4 h-4 ${s <= f.rating ? 'text-gold fill-gold' : 'text-ink-muted'}`} />
                       ))}
                     </div>
                   </div>
@@ -431,7 +437,6 @@ const PROVIDERS = [
     name: 'Claude (Anthropic)',
     field: 'claude_key',
     color: '#d97706',
-    icon: '🟠',
     placeholder: 'sk-ant-...',
     desc: 'Anthropic Claude API key. Uses claude-sonnet-4 model.'
   },
@@ -440,7 +445,6 @@ const PROVIDERS = [
     name: 'OpenAI (GPT)',
     field: 'openai_key',
     color: '#34d399',
-    icon: '🟢',
     placeholder: 'sk-...',
     desc: 'OpenAI API key. Uses gpt-4o-mini model.'
   },
@@ -449,7 +453,6 @@ const PROVIDERS = [
     name: 'Gemini (Google)',
     field: 'gemini_key',
     color: '#3b82f6',
-    icon: '🔵',
     placeholder: 'AIza...',
     desc: 'Google AI Studio API key. Uses gemini-1.5-flash model.'
   },
@@ -458,7 +461,6 @@ const PROVIDERS = [
     name: 'Copilot (GitHub Models)',
     field: 'copilot_key',
     color: '#a78bfa',
-    icon: '🟣',
     placeholder: 'ghp_...',
     desc: 'GitHub personal access token for GitHub Models inference.'
   }
@@ -575,7 +577,7 @@ function SettingsTab() {
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xl">{p.icon}</span>
+                <span className="w-4 h-4 rounded-full" style={{ background: p.color }} />
                 {provider === p.id && (
                   <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-gold text-[#1a1304] font-bold">
                     Active
@@ -607,7 +609,7 @@ function SettingsTab() {
           >
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-xl">{p.icon}</span>
+                <span className="w-4 h-4 rounded-full" style={{ background: p.color }} />
                 <div>
                   <h4 className="font-semibold">{p.name}</h4>
                   <p className="text-xs text-ink-muted">{p.desc}</p>

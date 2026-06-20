@@ -10,6 +10,30 @@ export const DEMO_STUDENTS: Student[] = [
     grade: 'Administrator',
     avatar: '★',
     status: 'active'
+  },
+  {
+    id: 'parent-1',
+    name: 'Sarah Patel',
+    email: 'parent@test.com',
+    pin: '1234',
+    role: 'parent',
+    grade: 'Year 6 — 11+',
+    parent_name: 'Sarah Patel',
+    status: 'active',
+    linked_students: ['student-amara']
+  },
+  {
+    id: 'student-amara',
+    name: 'Amara Patel',
+    email: 'amara@test.com',
+    pin: '0000',
+    role: 'student',
+    grade: 'Year 6 — 11+',
+    parent_name: 'Sarah Patel',
+    parent_email: 'parent@test.com',
+    school_name: 'Stretford Grammar',
+    subjects: ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning'],
+    status: 'active'
   }
 ];
 

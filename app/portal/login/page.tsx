@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StarField from '@/components/StarField';
 import GlassCard from '@/components/GlassCard';
+import { Star, ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function PortalLoginPage() {
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function PortalLoginPage() {
       if (j.user.role === 'admin') {
         router.push('/portal/admin');
       } else {
+        // Both parents and students go to dashboard
+        // Parents see their linked child's quizzes
         router.push('/portal/dashboard');
       }
     } catch (err: any) {
@@ -46,13 +49,13 @@ export default function PortalLoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <div
-            className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl font-bold text-[#1a1304] animate-pulseGold"
+            className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-[#1a1304] animate-pulseGold"
             style={{
               background: 'linear-gradient(135deg, #ffd166 0%, #f5b72f 100%)',
               boxShadow: '0 20px 60px -15px rgba(245,183,47,0.8)'
             }}
           >
-            ★
+            <Star className="w-9 h-9 fill-[#1a1304]" />
           </div>
           <h1 className="font-serif text-4xl font-semibold text-gradient mt-5">Star Tutoring</h1>
           <p className="text-xs tracking-[0.3em] text-ink-muted mt-1 uppercase">Student Portal</p>
@@ -101,7 +104,7 @@ export default function PortalLoginPage() {
                   Signing in...
                 </>
               ) : (
-                <>Sign In →</>
+                <span className="flex items-center gap-1.5">Sign In <ArrowRight className="w-4 h-4" /></span>
               )}
             </button>
           </form>
@@ -109,8 +112,9 @@ export default function PortalLoginPage() {
         </GlassCard>
 
         <div className="text-center mt-6">
-          <Link href="/" className="text-xs text-ink-muted hover:text-gold transition">
-            ← Back to Star Tutoring
+          <Link href="/" className="text-xs text-ink-muted hover:text-gold transition flex items-center justify-center gap-1">
+            <ArrowLeft className="w-3 h-3" />
+            Back to Star Tutoring
           </Link>
         </div>
       </div>

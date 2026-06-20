@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FileText, BarChart3, LogOut, Star } from 'lucide-react';
 
 export interface PortalUser {
   id: string;
@@ -11,11 +12,12 @@ export interface PortalUser {
   role: 'student' | 'parent' | 'admin';
   grade?: string;
   avatar?: string;
+  linked_students?: string[];
 }
 
 const nav = [
-  { href: '/portal/dashboard', icon: '📝', label: 'Quizzes' },
-  { href: '/portal/dashboard/analytics', icon: '📊', label: 'Analytics' }
+  { href: '/portal/dashboard', icon: <FileText className="w-5 h-5" />, label: 'Quizzes' },
+  { href: '/portal/dashboard/analytics', icon: <BarChart3 className="w-5 h-5" />, label: 'Analytics' }
 ];
 
 export default function Sidebar({ user }: { user: PortalUser }) {
@@ -39,10 +41,10 @@ export default function Sidebar({ user }: { user: PortalUser }) {
       >
         <div className="flex items-center gap-3 px-2 mb-8">
           <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-xl font-bold text-[#1a1304] flex-shrink-0"
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-[#1a1304] flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)' }}
           >
-            ★
+            <Star className="w-5 h-5 fill-[#1a1304]" />
           </div>
           {expanded && (
             <span className="font-serif text-lg font-semibold text-gradient whitespace-nowrap">
@@ -66,7 +68,7 @@ export default function Sidebar({ user }: { user: PortalUser }) {
                     : 'text-ink-soft hover:bg-white/5'
                 }`}
               >
-                <span className="text-xl flex-shrink-0 w-6 text-center">{n.icon}</span>
+                <span className="flex-shrink-0 w-6 flex justify-center">{n.icon}</span>
                 {expanded && <span className="text-sm font-medium whitespace-nowrap">{n.label}</span>}
               </Link>
             );
@@ -92,7 +94,7 @@ export default function Sidebar({ user }: { user: PortalUser }) {
             onClick={logout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-ink-soft hover:bg-red-500/10 hover:text-red-300 transition text-sm"
           >
-            <span className="text-lg w-6 text-center">⎋</span>
+            <span className="w-6 flex justify-center"><LogOut className="w-5 h-5" /></span>
             {expanded && <span>Logout</span>}
           </button>
         </div>
@@ -110,13 +112,13 @@ export default function Sidebar({ user }: { user: PortalUser }) {
                 active ? 'text-gold' : 'text-ink-soft'
               }`}
             >
-              <span className="text-lg">{n.icon}</span>
+              {n.icon}
               {n.label}
             </Link>
           );
         })}
         <button onClick={logout} className="flex flex-col items-center gap-1 px-4 py-2 text-xs text-ink-soft">
-          <span className="text-lg">⎋</span>
+          <LogOut className="w-5 h-5" />
           Logout
         </button>
       </nav>

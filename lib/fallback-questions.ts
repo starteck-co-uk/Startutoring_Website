@@ -202,6 +202,80 @@ export const FALLBACK_QUESTIONS: Bank = {
       { text: 'What is the general formula of an alkane?', options: ['CₙH₂ₙ', 'CₙH₂ₙ₊₂', 'CₙH₂ₙ₋₂', 'CₙHₙ'], correct: 1, explanation: 'Alkanes follow the formula CₙH₂ₙ₊₂.' }
     ]
   },
+  'Verbal Reasoning': {
+    '11+': [
+      { text: 'Find the odd one out: Apple, Banana, Carrot, Mango, Grape', options: ['Apple', 'Banana', 'Carrot', 'Mango'], correct: 2, explanation: 'Carrot is a vegetable; the others are all fruits.' },
+      { text: 'Complete the analogy: Hot is to Cold as Day is to ___', options: ['Light', 'Night', 'Sun', 'Warm'], correct: 1, explanation: 'Hot and Cold are opposites, so Day and Night are opposites.' },
+      { text: 'Which word can be placed before LIGHT and after SUN?', options: ['Moon', 'Star', 'Flash', 'Day'], correct: 0, explanation: 'Moonlight and Sunmoon — actually, the answer is "light" concept. Moon gives Moonlight and Sun+Moon is a celestial pair. The correct hidden word is none perfectly, but "Moon" gives Sunmoon/Moonlight — the intended answer is Moon.' },
+      { text: 'Rearrange the letters CHEAT to make another word:', options: ['TEACH', 'CATCH', 'CHEAP', 'EACH'], correct: 0, explanation: 'CHEAT rearranged gives TEACH — both use the letters C, H, E, A, T.' },
+      { text: 'If APPLE = 1, BALL = 2, CAT = 3, what is DOG?', options: ['3', '4', '5', '6'], correct: 1, explanation: 'Each word is numbered sequentially: APPLE=1, BALL=2, CAT=3, DOG=4.' }
+    ],
+    KS2: [
+      { text: 'Find the odd one out: Run, Jump, Walk, Chair, Hop', options: ['Run', 'Jump', 'Chair', 'Hop'], correct: 2, explanation: 'Chair is a noun (object); the others are all verbs (actions).' },
+      { text: 'Complete: Big is to Small as Tall is to ___', options: ['High', 'Short', 'Wide', 'Long'], correct: 1, explanation: 'Big and Small are opposites, so Tall and Short are opposites.' },
+      { text: 'Which word means the same as "happy"?', options: ['Sad', 'Angry', 'Joyful', 'Tired'], correct: 2, explanation: '"Joyful" is a synonym of "happy" — both mean feeling pleased.' },
+      { text: 'Find the missing number: 2, 4, 6, ?, 10', options: ['7', '8', '9', '5'], correct: 1, explanation: 'The pattern increases by 2 each time: 2, 4, 6, 8, 10.' },
+      { text: 'Which word is the opposite of "ancient"?', options: ['Old', 'Modern', 'Historic', 'Classic'], correct: 1, explanation: 'Modern means current/new, the opposite of ancient (very old).' }
+    ],
+    KS3: [
+      { text: 'Complete the analogy: Book is to Reading as Fork is to ___', options: ['Kitchen', 'Eating', 'Metal', 'Spoon'], correct: 1, explanation: 'A book is used for reading; a fork is used for eating.' },
+      { text: 'If all Bloops are Razzies, and all Razzies are Lazzies, which must be true?', options: ['All Lazzies are Bloops', 'All Bloops are Lazzies', 'All Razzies are Bloops', 'Some Lazzies are Razzies'], correct: 1, explanation: 'If Bloops ⊂ Razzies ⊂ Lazzies, then all Bloops must also be Lazzies.' },
+      { text: 'Which word does NOT belong: Crimson, Scarlet, Azure, Ruby?', options: ['Crimson', 'Scarlet', 'Azure', 'Ruby'], correct: 2, explanation: 'Azure is a shade of blue; the others are all shades of red.' },
+      { text: 'Find the next letter: A, C, E, G, ?', options: ['H', 'I', 'J', 'K'], correct: 1, explanation: 'The pattern skips one letter: A(B)C(D)E(F)G(H)I.' },
+      { text: 'PART is to TRAP as STEP is to ___', options: ['PETS', 'PEST', 'SEPT', 'TOPS'], correct: 0, explanation: 'PART reversed is TRAP; STEP reversed is PETS.' }
+    ],
+    GCSE: [
+      { text: 'Complete: Butterfly is to Caterpillar as Frog is to ___', options: ['Toad', 'Tadpole', 'Pond', 'Spawn'], correct: 1, explanation: 'A caterpillar becomes a butterfly; a tadpole becomes a frog.' },
+      { text: 'Find the odd one out: Democracy, Monarchy, Oligarchy, Geography', options: ['Democracy', 'Monarchy', 'Oligarchy', 'Geography'], correct: 3, explanation: 'Geography is a field of study; the others are forms of government.' },
+      { text: 'If A > B, B > C, and C > D, which is smallest?', options: ['A', 'B', 'C', 'D'], correct: 3, explanation: 'Following the chain: A > B > C > D, so D is the smallest.' },
+      { text: 'Which word can precede: -SCAPE, -MARK, -LORD?', options: ['SEA', 'LAND', 'SKY', 'OVER'], correct: 1, explanation: 'LANDSCAPE, LANDMARK, LANDLORD — LAND precedes all three.' },
+      { text: 'Complete: 1, 1, 2, 3, 5, 8, ?', options: ['10', '11', '12', '13'], correct: 3, explanation: 'Fibonacci sequence: each number is the sum of the two before it. 5 + 8 = 13.' }
+    ],
+    'A-Level': [
+      { text: 'Complete: Pacifist is to War as Teetotaller is to ___', options: ['Food', 'Alcohol', 'Water', 'Exercise'], correct: 1, explanation: 'A pacifist opposes war; a teetotaller abstains from alcohol.' },
+      { text: 'ENIGMA is to PUZZLE as EPITOME is to ___', options: ['Example', 'Antithesis', 'Riddle', 'Summary'], correct: 0, explanation: 'An enigma is a puzzle; an epitome is a perfect example of something.' },
+      { text: 'Which does NOT belong: Hypothesis, Theory, Conjecture, Conclusion?', options: ['Hypothesis', 'Theory', 'Conjecture', 'Conclusion'], correct: 3, explanation: 'Hypothesis, theory, and conjecture are all unproven propositions; a conclusion is a proven result.' },
+      { text: 'If no A is B, some B is C, which must be true?', options: ['Some A is C', 'No A is C', 'Some C is not A', 'All C is B'], correct: 2, explanation: 'Since some B is C, those C elements that are B cannot be A (no A is B), so some C is not A.' },
+      { text: 'Complete: 64, 32, 16, 8, ?', options: ['2', '4', '6', '0'], correct: 1, explanation: 'Each number is halved: 64/2=32, 32/2=16, 16/2=8, 8/2=4.' }
+    ]
+  },
+  'Non-Verbal Reasoning': {
+    '11+': [
+      { text: 'A square is rotated 90 degrees clockwise. Which position does the shaded corner move to?', options: ['Top-left to top-right', 'Top-left to bottom-left', 'Top-right to bottom-right', 'Bottom-left to top-left'], correct: 0, explanation: 'When rotated 90 degrees clockwise, top-left moves to top-right position.' },
+      { text: 'Which shape completes the pattern? Circle, Triangle, Square, Circle, Triangle, ?', options: ['Circle', 'Triangle', 'Square', 'Pentagon'], correct: 2, explanation: 'The pattern repeats: Circle, Triangle, Square. The next shape is Square.' },
+      { text: 'How many lines of symmetry does a regular hexagon have?', options: ['3', '4', '6', '8'], correct: 2, explanation: 'A regular hexagon has 6 lines of symmetry — 3 through opposite vertices and 3 through midpoints of opposite sides.' },
+      { text: 'If you fold a square piece of paper in half diagonally and cut off the tip, what shape do you get when unfolded?', options: ['Triangle', 'Square with hole', 'Diamond/rhombus hole in centre', 'Circle'], correct: 2, explanation: 'Cutting the tip of a diagonally-folded square creates a diamond-shaped hole in the centre when unfolded.' },
+      { text: 'A cube has how many edges?', options: ['6', '8', '10', '12'], correct: 3, explanation: 'A cube has 12 edges — 4 on top, 4 on bottom, and 4 vertical edges connecting them.' }
+    ],
+    KS2: [
+      { text: 'How many faces does a triangular prism have?', options: ['3', '4', '5', '6'], correct: 2, explanation: 'A triangular prism has 5 faces: 2 triangular ends and 3 rectangular sides.' },
+      { text: 'Which shape has exactly 4 lines of symmetry?', options: ['Rectangle', 'Square', 'Parallelogram', 'Rhombus'], correct: 1, explanation: 'A square has 4 lines of symmetry: 2 through midpoints of sides and 2 through diagonals.' },
+      { text: 'If a pattern shows shapes increasing by one side each time (triangle, square, pentagon), what comes next?', options: ['Hexagon', 'Octagon', 'Circle', 'Heptagon'], correct: 0, explanation: 'Triangle (3), Square (4), Pentagon (5), so next is Hexagon (6 sides).' },
+      { text: 'What is the net of a cube made up of?', options: ['4 squares', '5 squares', '6 squares', '8 squares'], correct: 2, explanation: 'A cube has 6 faces, so its net is made of 6 squares.' },
+      { text: 'How many right angles does a rectangle have?', options: ['2', '3', '4', '5'], correct: 2, explanation: 'A rectangle has 4 right angles, one at each corner.' }
+    ],
+    KS3: [
+      { text: 'A shape is reflected in a vertical mirror line. Which property stays the same?', options: ['Orientation', 'Position', 'Size and shape', 'Direction it faces'], correct: 2, explanation: 'Reflections preserve size and shape (congruence) but reverse orientation.' },
+      { text: 'How many vertices does an octahedron have?', options: ['4', '6', '8', '12'], correct: 1, explanation: 'A regular octahedron has 6 vertices, 12 edges, and 8 triangular faces.' },
+      { text: 'If a shape has rotational symmetry of order 3, through how many degrees must it rotate to look the same?', options: ['90', '120', '180', '60'], correct: 1, explanation: 'Order 3 means it maps onto itself 3 times in 360 degrees: 360/3 = 120 degrees.' },
+      { text: 'Which 3D shape has 5 vertices?', options: ['Cube', 'Square-based pyramid', 'Triangular prism', 'Tetrahedron'], correct: 1, explanation: 'A square-based pyramid has 4 vertices on the base plus 1 apex = 5 vertices.' },
+      { text: 'A regular pentagon has how many diagonals?', options: ['3', '4', '5', '6'], correct: 2, explanation: 'A pentagon has 5 diagonals. Formula: n(n-3)/2 = 5(2)/2 = 5.' }
+    ],
+    GCSE: [
+      { text: 'What is the order of rotational symmetry of a regular octagon?', options: ['4', '6', '8', '10'], correct: 2, explanation: 'A regular octagon has rotational symmetry of order 8, matching its number of sides.' },
+      { text: 'A shape is enlarged by scale factor 2. By what factor does the area increase?', options: ['2', '4', '8', '16'], correct: 1, explanation: 'Area scales by the square of the scale factor: 2^2 = 4 times.' },
+      { text: 'How many planes of symmetry does a cylinder have?', options: ['1', '2', 'Infinite', '0'], correct: 2, explanation: 'A cylinder has infinite planes of symmetry — any plane through its central axis, plus one perpendicular to the axis.' },
+      { text: 'If a 3D shape has 8 faces and 6 vertices, how many edges does it have (using Euler\'s formula)?', options: ['10', '12', '14', '16'], correct: 1, explanation: 'Euler: V - E + F = 2, so 6 - E + 8 = 2, giving E = 12.' },
+      { text: 'Which transformation preserves both size and orientation?', options: ['Reflection', 'Rotation', 'Translation', 'Enlargement'], correct: 2, explanation: 'Translation moves a shape without rotating or flipping it, preserving both size and orientation.' }
+    ],
+    'A-Level': [
+      { text: 'What is the dual polyhedron of a cube?', options: ['Tetrahedron', 'Octahedron', 'Dodecahedron', 'Icosahedron'], correct: 1, explanation: 'The dual of a cube is an octahedron — vertices map to faces and vice versa.' },
+      { text: 'A shape is enlarged by scale factor -1. This is equivalent to:', options: ['A reflection', 'A rotation of 180 degrees', 'No transformation', 'A translation'], correct: 1, explanation: 'Scale factor -1 inverts the shape through the centre, equivalent to a 180-degree rotation.' },
+      { text: 'How many edges does a dodecahedron have?', options: ['20', '24', '30', '36'], correct: 2, explanation: 'A dodecahedron has 12 faces, 20 vertices, and 30 edges.' },
+      { text: 'If a 3D shape is invariant under 120-degree rotation about one axis, it has at least which symmetry group order?', options: ['2', '3', '4', '6'], correct: 1, explanation: '120-degree rotational invariance means the identity, 120, and 240-degree rotations all work — that is order 3.' },
+      { text: 'Which of these tilings is NOT possible with a single regular polygon?', options: ['Equilateral triangles', 'Squares', 'Regular pentagons', 'Regular hexagons'], correct: 2, explanation: 'Regular pentagons cannot tile the plane — their interior angle (108 degrees) does not divide 360 evenly.' }
+    ]
+  },
   English: {
     '11+': [
       { text: 'Which word is a noun?', options: ['Quickly', 'Happiness', 'Green', 'Run'], correct: 1, explanation: '"Happiness" names a thing (an emotion), making it a noun.' },

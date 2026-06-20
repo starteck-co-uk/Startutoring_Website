@@ -8,30 +8,43 @@ import QuizResults from '@/components/portal/QuizResults';
 import PdfGradeResults from '@/components/portal/PdfGradeResults';
 import AssignedQuizList from '@/components/portal/AssignedQuizList';
 import type { Question, Subject, Level } from '@/lib/types';
+import { Zap, BookOpen, FileUp, Star as StarIcon, Brain, Puzzle } from 'lucide-react';
 
 const SUBJECTS: {
-  name: Subject;
-  icon: string;
+  name: string;
+  icon: React.ReactNode;
   grad: string;
   desc: string;
 }[] = [
   {
     name: 'Maths',
-    icon: '∑',
+    icon: <span className="text-3xl font-bold">&#931;</span>,
     grad: 'linear-gradient(135deg, #a78bfa, #6366f1)',
     desc: 'Numbers, algebra, geometry & problem solving'
   },
   {
-    name: 'Science',
-    icon: '⚡',
-    grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
-    desc: 'Physics, Chemistry & Biology'
-  },
-  {
     name: 'English',
-    icon: '📖',
+    icon: <BookOpen className="w-7 h-7" />,
     grad: 'linear-gradient(135deg, #22d3ee, #3b82f6)',
     desc: 'Reading, grammar & creative writing'
+  },
+  {
+    name: 'Verbal Reasoning',
+    icon: <Brain className="w-7 h-7" />,
+    grad: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    desc: 'Word patterns, logic, vocabulary & comprehension'
+  },
+  {
+    name: 'Non-Verbal Reasoning',
+    icon: <Puzzle className="w-7 h-7" />,
+    grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
+    desc: 'Shape patterns, sequences, spatial awareness'
+  },
+  {
+    name: 'Science',
+    icon: <Zap className="w-7 h-7" />,
+    grad: 'linear-gradient(135deg, #34d399, #10b981)',
+    desc: 'Physics, Chemistry & Biology'
   }
 ];
 
@@ -61,13 +74,20 @@ export default function DashboardPage() {
   const [assignedQuestions, setAssignedQuestions] = useState<Array<{ id: string; question_order: number; text: string; options: string[] }>>([]);
   const [assignedResult, setAssignedResult] = useState<any>(null);
 
+  // For parent accounts, we use the linked student ID for quiz submissions
+  const studentId = user?.role === 'parent' && user?.linked_students?.length
+    ? user.linked_students[0]
+    : user?.id;
+
+  const studentName = user?.role === 'parent' ? (user?.name || 'Your child') : user?.name;
+
   useEffect(() => {
-    if (!user) return;
-    fetch(`/api/student-stats?id=${user.id}`)
+    if (!studentId) return;
+    fetch(`/api/student-stats?id=${studentId}`)
       .then((r) => r.json())
       .then(setStats)
       .catch(() => setStats(null));
-  }, [user]);
+  }, [studentId]);
 
   const startQuiz = async (subject: string, level: string) => {
     setCurrentSubject(subject);
@@ -94,14 +114,14 @@ export default function DashboardPage() {
   };
 
   const onSave = async () => {
-    if (!result || !user) return;
+    if (!result || !studentId) return;
     setSaving(true);
     try {
       await fetch('/api/submit-quiz', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          student_id: user.id,
+          student_id: studentId,
           subject: currentSubject,
           level: currentLevel,
           title,
@@ -115,8 +135,7 @@ export default function DashboardPage() {
     setSaving(false);
     setPhase('idle');
     setResult(null);
-    // refresh stats
-    fetch(`/api/student-stats?id=${user.id}`)
+    fetch(`/api/student-stats?id=${studentId}`)
       .then((r) => r.json())
       .then(setStats)
       .catch(() => {});
@@ -186,22 +205,20 @@ export default function DashboardPage() {
   };
 
   const onAssignedComplete = async (r: { score: number; total: number; timeTakenSecs: number; answers: any[] }) => {
-    if (!user || !assignedQuizId) return;
+    if (!studentId || !assignedQuizId) return;
     setPhase('loading');
     try {
-      const submitR = await fetch(`/api/student/quizzes/${assignedQuizId}/submit`, {
+      await fetch(`/api/student/quizzes/${assignedQuizId}/submit`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          student_id: user.id,
+          student_id: studentId,
           answers: r.answers.map((a: any) => ({ question_id: a.id, selected: a.selected })),
           time_taken_secs: r.timeTakenSecs
         })
       });
-      const j = await submitR.json();
 
-      // Fetch full results with correct answers
-      const resultsR = await fetch(`/api/student/quizzes/${assignedQuizId}/results?student_id=${user.id}`);
+      const resultsR = await fetch(`/api/student/quizzes/${assignedQuizId}/results?student_id=${studentId}`);
       const resultsJ = await resultsR.json();
       setAssignedResult(resultsJ);
       setPhase('assigned-results');
@@ -211,11 +228,11 @@ export default function DashboardPage() {
   };
 
   const viewAssignedResults = async (quizId: string) => {
-    if (!user) return;
+    if (!studentId) return;
     setAssignedQuizId(quizId);
     setPhase('loading');
     try {
-      const r = await fetch(`/api/student/quizzes/${quizId}/results?student_id=${user.id}`);
+      const r = await fetch(`/api/student/quizzes/${quizId}/results?student_id=${studentId}`);
       const j = await r.json();
       if (!r.ok) throw new Error(j.error);
       setTitle(j.quiz?.title || 'Quiz Results');
@@ -284,24 +301,20 @@ export default function DashboardPage() {
         <Sidebar user={user} />
         <main className="md:pl-[72px] min-h-screen flex items-center justify-center px-5">
           <div className="text-center">
-            <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl animate-pulseGold"
+            <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center animate-pulseGold"
               style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}
             >
-              ★
+              <StarIcon className="w-9 h-9 fill-[#1a1304]" />
             </div>
             <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">
               Grading your work...
             </h2>
             <p className="text-ink-soft text-sm mt-2">
-              AI is analysing your {currentLevel} {currentSubject} submission — checking method, steps, and answers
+              AI is analysing your {currentLevel} {currentSubject} submission
             </p>
             <div className="mt-6 flex justify-center gap-1">
               {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-gold animate-pulse"
-                  style={{ animationDelay: `${i * 0.2}s` }}
-                />
+                <div key={i} className="w-2 h-2 rounded-full bg-gold animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
               ))}
             </div>
           </div>
@@ -311,11 +324,10 @@ export default function DashboardPage() {
   }
 
   if (phase === 'assigned-quiz' && assignedQuestions.length > 0) {
-    // Convert assigned questions (no correct/explanation) to QuizRunner format
     const runnerQuestions: Question[] = assignedQuestions.map((q) => ({
       text: q.text,
       options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
-      correct: -1, // hidden
+      correct: -1,
       explanation: ''
     }));
 
@@ -327,7 +339,6 @@ export default function DashboardPage() {
         questions={runnerQuestions}
         onExit={() => setPhase('idle')}
         onComplete={(r) => {
-          // Attach question IDs to answers for submission
           const answersWithIds = r!.answers.map((a, i) => ({
             ...a,
             id: assignedQuestions[i]?.id
@@ -362,9 +373,8 @@ export default function DashboardPage() {
         onSave={() => {
           setPhase('idle');
           setAssignedResult(null);
-          // refresh stats
-          if (user) {
-            fetch(`/api/student-stats?id=${user.id}`)
+          if (studentId) {
+            fetch(`/api/student-stats?id=${studentId}`)
               .then((r) => r.json())
               .then(setStats)
               .catch(() => {});
@@ -380,24 +390,20 @@ export default function DashboardPage() {
         <Sidebar user={user} />
         <main className="md:pl-[72px] min-h-screen flex items-center justify-center px-5">
           <div className="text-center">
-            <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl animate-pulseGold"
+            <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center animate-pulseGold"
               style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}
             >
-              ★
+              <StarIcon className="w-9 h-9 fill-[#1a1304]" />
             </div>
             <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">
-              AI is generating fresh questions...
+              Preparing quiz...
             </h2>
             <p className="text-ink-soft text-sm mt-2">
-              Creating a brand new {currentLevel} {currentSubject} quiz just for you
+              Getting {currentLevel} {currentSubject} questions ready
             </p>
             <div className="mt-6 flex justify-center gap-1">
               {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-gold animate-pulse"
-                  style={{ animationDelay: `${i * 0.2}s` }}
-                />
+                <div key={i} className="w-2 h-2 rounded-full bg-gold animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
               ))}
             </div>
           </div>
@@ -415,21 +421,28 @@ export default function DashboardPage() {
         <div className="px-5 md:px-10 py-10 max-w-6xl mx-auto">
           <div className="flex items-start justify-between flex-wrap gap-4 mb-10">
             <div>
+              {user.role === 'parent' && (
+                <p className="text-xs text-gold uppercase tracking-widest mb-1">
+                  Parent Dashboard
+                </p>
+              )}
               <p className="text-xs text-ink-muted uppercase tracking-widest">
-                Welcome back, {user.name.split(' ')[0]}
+                Welcome, {user.name.split(' ')[0]}
               </p>
               <h1 className="font-serif text-4xl md:text-5xl font-semibold text-gradient mt-2">
-                Take a Quiz
+                {user.role === 'parent' ? 'Your Child\'s Quizzes' : 'Take a Quiz'}
               </h1>
               <p className="text-ink-soft mt-2">
-                AI generates fresh questions every time — or upload your work as a PDF for detailed grading.
+                {user.role === 'parent'
+                  ? 'Open a quiz below and let your child take it. Results are graded instantly with GL Assessment format scoring.'
+                  : 'Pick a subject and level to start a quiz. Graded instantly in GL Assessment format.'}
               </p>
             </div>
           </div>
 
           {/* Assigned quizzes from admin */}
           <AssignedQuizList
-            studentId={user.id}
+            studentId={studentId || ''}
             level={studentLevel}
             onTakeQuiz={startAssignedQuiz}
             onViewResults={viewAssignedResults}
@@ -457,7 +470,7 @@ export default function DashboardPage() {
                 <GlassCard key={s.name} className="!p-7 md:!p-9">
                   <div className="flex items-start gap-5 flex-wrap">
                     <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-bold text-white flex-shrink-0"
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-white flex-shrink-0"
                       style={{ background: s.grad, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.6)' }}
                     >
                       {s.icon}
@@ -480,7 +493,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="mt-6">
-                    <p className="text-xs text-ink-muted uppercase tracking-widest mb-2">Take a Quiz</p>
+                    <p className="text-xs text-ink-muted uppercase tracking-widest mb-2">Start a GL Assessment Quiz</p>
                     <div className="flex flex-wrap gap-2">
                       {LEVELS.map((l) => (
                         <button
@@ -502,7 +515,7 @@ export default function DashboardPage() {
                           onClick={() => startPdfUpload(s.name, l)}
                           className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm text-ink-soft hover:border-cyan-400/50 hover:bg-cyan-400/10 hover:text-cyan-300 transition-all flex items-center gap-1.5"
                         >
-                          <span className="text-xs">PDF</span> {l}
+                          <FileUp className="w-3.5 h-3.5" /> {l}
                         </button>
                       ))}
                     </div>
@@ -521,7 +534,7 @@ export default function DashboardPage() {
                     <div key={i} className="flex items-center justify-between px-6 py-4">
                       <div>
                         <p className="font-medium">{r.title || `${r.subject} Quiz`}</p>
-                        <p className="text-xs text-ink-muted mt-0.5">{r.subject} • {r.level}</p>
+                        <p className="text-xs text-ink-muted mt-0.5">{r.subject} &middot; {r.level}</p>
                       </div>
                       <div className="text-right">
                         <p
