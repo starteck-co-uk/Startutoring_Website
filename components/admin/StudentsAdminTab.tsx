@@ -64,7 +64,7 @@ export default function StudentsAdminTab() {
       const r = await fetch('/api/admin/students');
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Failed to load students');
-      setStudents((j.students || []).filter((s: Student) => s.role !== 'admin'));
+      setStudents((j.students || []).filter((s: Student) => s.role === 'student'));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -220,7 +220,9 @@ function StudentCard({ student, onEdit, onDelete }: { student: Student; onEdit: 
           {student.parent_name && (
             <p className="text-xs text-ink-soft truncate">Parent: {student.parent_name}</p>
           )}
-          <p className="text-xs text-ink-muted truncate">{student.email}</p>
+          <p className="text-xs text-ink-muted truncate">
+            {student.parent_email ? `Login: ${student.parent_email}` : student.email}
+          </p>
         </div>
       </div>
 

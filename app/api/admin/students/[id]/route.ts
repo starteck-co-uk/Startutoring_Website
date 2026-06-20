@@ -24,9 +24,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   try {
     const body = await req.json();
     const allowed = [
-      'name', 'email', 'pin', 'grade', 'parent_name', 'avatar',
+      'name', 'email', 'pin', 'grade', 'parent_name', 'parent_email', 'avatar',
       'phone', 'school_name', 'subjects', 'strengths', 'areas_to_improve',
-      'medical_notes', 'admin_notes', 'status'
+      'medical_notes', 'admin_notes', 'status', 'linked_students'
     ];
     const patch: any = {};
     for (const k of allowed) {

@@ -10,7 +10,7 @@ import AssignedQuizList from '@/components/portal/AssignedQuizList';
 import WeeklyTestRunner from '@/components/portal/WeeklyTestRunner';
 import WeeklyTestResults from '@/components/portal/WeeklyTestResults';
 import type { Question, Level } from '@/lib/types';
-import { Star as StarIcon, CalendarCheck, Lock, ChevronRight, Clock } from 'lucide-react';
+import { Star as StarIcon, CalendarCheck, Lock, ChevronRight, Clock, GraduationCap, School, BookOpen, TrendingUp, AlertCircle, User } from 'lucide-react';
 
 type Phase =
   | 'idle' | 'loading'
@@ -47,6 +47,9 @@ export default function DashboardPage() {
   const [weeklyTestData, setWeeklyTestData] = useState<any>(null);
   const [weeklyResult, setWeeklyResult] = useState<any>(null);
 
+  // Student profile (for parent view)
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+
   const studentId = user?.role === 'parent' && user?.linked_students?.length
     ? user.linked_students[0]
     : user?.id;
@@ -61,7 +64,15 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(setStats)
       .catch(() => setStats(null));
-  }, [studentId]);
+
+    // Fetch linked student profile for parent dashboard
+    if (user?.role === 'parent') {
+      fetch(`/api/student/profile?id=${studentId}`)
+        .then(r => r.json())
+        .then(d => setStudentProfile(d.student || null))
+        .catch(() => setStudentProfile(null));
+    }
+  }, [studentId, user?.role]);
 
   // Load weekly tests
   useEffect(() => {
@@ -477,6 +488,90 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+          {/* Student Profile Card (parent view) */}
+          {user.role === 'parent' && studentProfile && (
+            <GlassCard className="!p-6 mb-10" hover={false}>
+              <div className="flex items-start gap-5">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center font-semibold text-2xl shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}
+                >
+                  {studentProfile.avatar || studentProfile.name?.[0] || '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="font-serif text-2xl font-semibold">{studentProfile.name}</h2>
+                    <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-semibold border ${
+                      (studentProfile.status || 'active') === 'active'
+                        ? 'bg-green-400/10 border-green-400/30 text-green-300'
+                        : (studentProfile.status || 'active') === 'paused'
+                        ? 'bg-yellow-400/10 border-yellow-400/30 text-yellow-300'
+                        : 'bg-red-400/10 border-red-400/30 text-red-300'
+                    }`}>
+                      {studentProfile.status || 'active'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 mt-3 text-sm">
+                    {studentProfile.grade && (
+                      <div className="flex items-center gap-2 text-ink-soft">
+                        <GraduationCap className="w-4 h-4 text-gold shrink-0" />
+                        <span>{studentProfile.grade}</span>
+                      </div>
+                    )}
+                    {studentProfile.school_name && (
+                      <div className="flex items-center gap-2 text-ink-soft">
+                        <School className="w-4 h-4 text-gold shrink-0" />
+                        <span className="truncate">{studentProfile.school_name}</span>
+                      </div>
+                    )}
+                    {studentProfile.parent_name && (
+                      <div className="flex items-center gap-2 text-ink-soft">
+                        <User className="w-4 h-4 text-gold shrink-0" />
+                        <span>Parent: {studentProfile.parent_name}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Subjects */}
+                  {studentProfile.subjects && studentProfile.subjects.length > 0 && (
+                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                      <BookOpen className="w-4 h-4 text-gold shrink-0" />
+                      {studentProfile.subjects.map((sub: string) => (
+                        <span key={sub} className="text-xs px-2.5 py-1 rounded-full bg-gold-dim border border-gold/30 text-gold-light">
+                          {sub}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Strengths & Areas to improve */}
+                  {(studentProfile.strengths || studentProfile.areas_to_improve) && (
+                    <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                      {studentProfile.strengths && (
+                        <div className="flex gap-2 text-sm">
+                          <TrendingUp className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-green-300 font-medium text-xs uppercase tracking-wider mb-0.5">Strengths</p>
+                            <p className="text-ink-soft leading-relaxed">{studentProfile.strengths}</p>
+                          </div>
+                        </div>
+                      )}
+                      {studentProfile.areas_to_improve && (
+                        <div className="flex gap-2 text-sm">
+                          <AlertCircle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-yellow-300 font-medium text-xs uppercase tracking-wider mb-0.5">Areas to Improve</p>
+                            <p className="text-ink-soft leading-relaxed">{studentProfile.areas_to_improve}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+          )}
 
           {/* Hidden file input for PDF uploads */}
           <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handlePdfFile} />

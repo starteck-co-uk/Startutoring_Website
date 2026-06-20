@@ -11,9 +11,10 @@ create table if not exists public.students (
   name text not null,
   email text not null unique,
   pin text not null,
-  role text not null check (role in ('student', 'admin')),
+  role text not null check (role in ('student', 'parent', 'admin')),
   grade text,
   parent_name text,
+  parent_email text,
   avatar text,
   phone text,
   school_name text,
@@ -23,6 +24,7 @@ create table if not exists public.students (
   medical_notes text,
   admin_notes text,
   status text not null default 'active' check (status in ('active', 'inactive', 'paused')),
+  linked_students text[] default '{}',
   enrollment_date date default current_date,
   created_at timestamptz not null default now()
 );
@@ -145,6 +147,37 @@ create table if not exists public.quiz_attempts (
 );
 create index if not exists quiz_attempts_student_idx on public.quiz_attempts (student_id, submitted_at desc);
 
+-- Weekly tests (GL Assessment format — 4 subject sections per test)
+create table if not exists public.weekly_tests (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  level text not null,
+  week_start date not null,
+  status text not null default 'draft' check (status in ('draft', 'published', 'closed')),
+  sections jsonb not null default '[]',
+  published_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists weekly_tests_level_status_idx on public.weekly_tests (level, status);
+
+-- Student attempts at weekly tests
+create table if not exists public.weekly_test_attempts (
+  id uuid primary key default gen_random_uuid(),
+  test_id uuid not null references public.weekly_tests(id) on delete cascade,
+  student_id uuid not null references public.students(id) on delete cascade,
+  section_results jsonb not null default '[]',
+  total_score int not null default 0,
+  total_questions int not null default 0,
+  total_percentage numeric not null default 0,
+  time_taken_secs int not null default 0,
+  completed boolean not null default false,
+  started_at timestamptz not null default now(),
+  submitted_at timestamptz,
+  unique(test_id, student_id)
+);
+create index if not exists weekly_test_attempts_student_idx on public.weekly_test_attempts (student_id, submitted_at desc);
+
 -- ========== ROW LEVEL SECURITY ==========
 alter table public.students enable row level security;
 alter table public.quiz_results enable row level security;
@@ -156,6 +189,8 @@ alter table public.syllabi enable row level security;
 alter table public.quizzes enable row level security;
 alter table public.quiz_questions enable row level security;
 alter table public.quiz_attempts enable row level security;
+alter table public.weekly_tests enable row level security;
+alter table public.weekly_test_attempts enable row level security;
 
 drop policy if exists "syllabi all" on public.syllabi;
 create policy "syllabi all" on public.syllabi using (true) with check (true);
@@ -168,6 +203,12 @@ create policy "quiz_questions all" on public.quiz_questions using (true) with ch
 
 drop policy if exists "quiz_attempts all" on public.quiz_attempts;
 create policy "quiz_attempts all" on public.quiz_attempts using (true) with check (true);
+
+drop policy if exists "weekly_tests all" on public.weekly_tests;
+create policy "weekly_tests all" on public.weekly_tests using (true) with check (true);
+
+drop policy if exists "weekly_test_attempts all" on public.weekly_test_attempts;
+create policy "weekly_test_attempts all" on public.weekly_test_attempts using (true) with check (true);
 
 -- ai_settings: only service role should read/write (API routes use admin client)
 drop policy if exists "ai_settings all" on public.ai_settings;
