@@ -8,12 +8,13 @@ import SyllabiTab from '@/components/admin/SyllabiTab';
 import QuizzesTab from '@/components/admin/QuizzesTab';
 import StudentsAdminTab from '@/components/admin/StudentsAdminTab';
 import LeadsTab from '@/components/admin/LeadsTab';
+import WeeklyTestsTab from '@/components/admin/WeeklyTestsTab';
 import {
   LayoutDashboard, BookOpen, FileText, ClipboardList, Mail, Star,
-  Users, Settings, GraduationCap, PenTool, LogOut, Download
+  Users, Settings, GraduationCap, PenTool, LogOut, Download, CalendarCheck
 } from 'lucide-react';
 
-type Tab = 'overview' | 'syllabi' | 'quizzes' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'leads' | 'settings';
+type Tab = 'overview' | 'syllabi' | 'quizzes' | 'weekly-tests' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'leads' | 'settings';
 
 interface AdminUser {
   id: string;
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'students' || tab === 'feedback' || tab === 'leads') {
+    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'weekly-tests' || tab === 'students' || tab === 'feedback' || tab === 'leads') {
       setLoading(false);
       return;
     }
@@ -64,6 +65,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'syllabi', label: 'Syllabi', icon: <BookOpen className="w-4 h-4" /> },
     { id: 'quizzes', label: 'Quizzes', icon: <FileText className="w-4 h-4" /> },
+    { id: 'weekly-tests', label: 'Weekly Tests', icon: <CalendarCheck className="w-4 h-4" /> },
     { id: 'assessments', label: 'Assessments', icon: <ClipboardList className="w-4 h-4" /> },
     { id: 'contacts', label: 'Messages', icon: <Mail className="w-4 h-4" /> },
     { id: 'feedback', label: 'Feedback', icon: <Star className="w-4 h-4" /> },
@@ -130,6 +132,7 @@ export default function AdminDashboard() {
             {tab === 'overview' && <OverviewTab data={data} />}
             {tab === 'syllabi' && <SyllabiTab />}
             {tab === 'quizzes' && <QuizzesTab />}
+            {tab === 'weekly-tests' && <WeeklyTestsTab />}
             {tab === 'assessments' && <AssessmentsTab data={data} />}
             {tab === 'contacts' && <ContactsTab data={data} />}
             {tab === 'feedback' && <FeedbackTab />}

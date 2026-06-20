@@ -1,4 +1,4 @@
-import type { Student, Quiz, QuizQuestion, QuizAttempt, Syllabus } from './types';
+import type { Student, Quiz, QuizQuestion, QuizAttempt, Syllabus, WeeklyTest, WeeklyTestAttempt } from './types';
 
 export const DEMO_STUDENTS: Student[] = [
   {
@@ -223,6 +223,89 @@ export const demoAdminQuizStore = {
     a.percentage = total > 0 ? Math.round((score / total) * 100) : 0;
     a.graded = true;
     a.submitted_at = new Date().toISOString();
+    return a;
+  }
+};
+
+// ─── Weekly Tests store ───
+const weeklyTestsStore: WeeklyTest[] = [];
+const weeklyTestAttemptsStore: WeeklyTestAttempt[] = [];
+
+export const demoWeeklyTestStore = {
+  allTests() { return weeklyTestsStore; },
+  testById(id: string) { return weeklyTestsStore.find(t => t.id === id) || null; },
+  publishedForLevel(level: string) {
+    return weeklyTestsStore.filter(t => t.status === 'published' && t.level === level);
+  },
+  insertTest(row: Partial<WeeklyTest>) {
+    const now = new Date().toISOString();
+    const item: WeeklyTest = {
+      id: row.id || `wt-${Date.now()}`,
+      title: row.title || 'Weekly Test',
+      level: row.level || '11+',
+      week_start: row.week_start || now,
+      status: 'draft',
+      sections: row.sections || [],
+      created_at: now,
+      updated_at: now
+    };
+    weeklyTestsStore.unshift(item);
+    return item;
+  },
+  updateTest(id: string, patch: Partial<WeeklyTest>) {
+    const t = weeklyTestsStore.find(t => t.id === id);
+    if (!t) return null;
+    Object.assign(t, patch, { updated_at: new Date().toISOString() });
+    if (patch.status === 'published') t.published_at = new Date().toISOString();
+    return t;
+  },
+  deleteTest(id: string) {
+    const idx = weeklyTestsStore.findIndex(t => t.id === id);
+    if (idx >= 0) weeklyTestsStore.splice(idx, 1);
+    // cascade delete attempts
+    for (let i = weeklyTestAttemptsStore.length - 1; i >= 0; i--) {
+      if (weeklyTestAttemptsStore[i].test_id === id) weeklyTestAttemptsStore.splice(i, 1);
+    }
+  },
+
+  // Attempts
+  attemptsByStudent(studentId: string) {
+    return weeklyTestAttemptsStore.filter(a => a.student_id === studentId);
+  },
+  attemptByStudentTest(studentId: string, testId: string) {
+    return weeklyTestAttemptsStore.find(a => a.student_id === studentId && a.test_id === testId) || null;
+  },
+  attemptsThisWeek(studentId: string) {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    return weeklyTestAttemptsStore.filter(a =>
+      a.student_id === studentId && new Date(a.started_at) >= monday
+    );
+  },
+  insertAttempt(row: Partial<WeeklyTestAttempt>) {
+    const now = new Date().toISOString();
+    const item: WeeklyTestAttempt = {
+      id: row.id || `wta-${Date.now()}`,
+      test_id: row.test_id || '',
+      student_id: row.student_id || '',
+      started_at: now,
+      section_results: [],
+      total_score: 0,
+      total_questions: 0,
+      total_percentage: 0,
+      time_taken_secs: 0,
+      completed: false,
+      ...row
+    };
+    weeklyTestAttemptsStore.push(item);
+    return item;
+  },
+  submitAttempt(attemptId: string, data: Partial<WeeklyTestAttempt>) {
+    const a = weeklyTestAttemptsStore.find(a => a.id === attemptId);
+    if (!a) return null;
+    Object.assign(a, data, { submitted_at: new Date().toISOString(), completed: true });
     return a;
   }
 };

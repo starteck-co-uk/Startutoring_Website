@@ -7,56 +7,23 @@ import QuizRunner from '@/components/portal/QuizRunner';
 import QuizResults from '@/components/portal/QuizResults';
 import PdfGradeResults from '@/components/portal/PdfGradeResults';
 import AssignedQuizList from '@/components/portal/AssignedQuizList';
-import type { Question, Subject, Level } from '@/lib/types';
-import { Zap, BookOpen, FileUp, Star as StarIcon, Brain, Puzzle } from 'lucide-react';
+import WeeklyTestRunner from '@/components/portal/WeeklyTestRunner';
+import WeeklyTestResults from '@/components/portal/WeeklyTestResults';
+import type { Question, Level } from '@/lib/types';
+import { Star as StarIcon, CalendarCheck, Lock, ChevronRight, Clock } from 'lucide-react';
 
-const SUBJECTS: {
-  name: string;
-  icon: React.ReactNode;
-  grad: string;
-  desc: string;
-}[] = [
-  {
-    name: 'Maths',
-    icon: <span className="text-3xl font-bold">&#931;</span>,
-    grad: 'linear-gradient(135deg, #a78bfa, #6366f1)',
-    desc: 'Numbers, algebra, geometry & problem solving'
-  },
-  {
-    name: 'English',
-    icon: <BookOpen className="w-7 h-7" />,
-    grad: 'linear-gradient(135deg, #22d3ee, #3b82f6)',
-    desc: 'Reading, grammar & creative writing'
-  },
-  {
-    name: 'Verbal Reasoning',
-    icon: <Brain className="w-7 h-7" />,
-    grad: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    desc: 'Word patterns, logic, vocabulary & comprehension'
-  },
-  {
-    name: 'Non-Verbal Reasoning',
-    icon: <Puzzle className="w-7 h-7" />,
-    grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
-    desc: 'Shape patterns, sequences, spatial awareness'
-  },
-  {
-    name: 'Science',
-    icon: <Zap className="w-7 h-7" />,
-    grad: 'linear-gradient(135deg, #34d399, #10b981)',
-    desc: 'Physics, Chemistry & Biology'
-  }
-];
-
-const LEVELS: Level[] = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
-
-type Phase = 'idle' | 'loading' | 'quiz' | 'results' | 'pdf-grading' | 'pdf-results' | 'assigned-quiz' | 'assigned-results';
+type Phase =
+  | 'idle' | 'loading'
+  | 'quiz' | 'results'
+  | 'pdf-grading' | 'pdf-results'
+  | 'assigned-quiz' | 'assigned-results'
+  | 'weekly-test' | 'weekly-results';
 
 export default function DashboardPage() {
   const user = usePortalUser();
   const [phase, setPhase] = useState<Phase>('idle');
-  const [currentSubject, setCurrentSubject] = useState<string>('');
-  const [currentLevel, setCurrentLevel] = useState<string>('');
+  const [currentSubject, setCurrentSubject] = useState('');
+  const [currentLevel, setCurrentLevel] = useState('');
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [result, setResult] = useState<{
@@ -74,21 +41,103 @@ export default function DashboardPage() {
   const [assignedQuestions, setAssignedQuestions] = useState<Array<{ id: string; question_order: number; text: string; options: string[] }>>([]);
   const [assignedResult, setAssignedResult] = useState<any>(null);
 
-  // For parent accounts, we use the linked student ID for quiz submissions
+  // Weekly test state
+  const [weeklyTests, setWeeklyTests] = useState<any[]>([]);
+  const [testsThisWeek, setTestsThisWeek] = useState(0);
+  const [weeklyTestData, setWeeklyTestData] = useState<any>(null);
+  const [weeklyResult, setWeeklyResult] = useState<any>(null);
+
   const studentId = user?.role === 'parent' && user?.linked_students?.length
     ? user.linked_students[0]
     : user?.id;
 
-  const studentName = user?.role === 'parent' ? (user?.name || 'Your child') : user?.name;
+  const studentLevel = user?.grade?.includes('—')
+    ? user.grade.split('—')[1]?.trim()
+    : user?.grade?.split(' ').pop() || '';
 
   useEffect(() => {
     if (!studentId) return;
     fetch(`/api/student-stats?id=${studentId}`)
-      .then((r) => r.json())
+      .then(r => r.json())
       .then(setStats)
       .catch(() => setStats(null));
   }, [studentId]);
 
+  // Load weekly tests
+  useEffect(() => {
+    if (!studentLevel || !studentId) return;
+    fetch(`/api/student/weekly-tests?level=${encodeURIComponent(studentLevel)}&student_id=${studentId}`)
+      .then(r => r.json())
+      .then(d => {
+        setWeeklyTests(d.tests || []);
+        setTestsThisWeek(d.tests_this_week || 0);
+      })
+      .catch(() => {});
+  }, [studentLevel, studentId]);
+
+  const startWeeklyTest = async (testId: string, testTitle: string) => {
+    setTitle(testTitle);
+    setPhase('loading');
+    try {
+      const r = await fetch(`/api/student/weekly-tests/${testId}?student_id=${studentId}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      setWeeklyTestData(j.test);
+      setPhase('weekly-test');
+    } catch {
+      setPhase('idle');
+    }
+  };
+
+  const onWeeklySubmit = async (data: { section_answers: any; time_taken_secs: number }) => {
+    if (!studentId || !weeklyTestData) return;
+    setPhase('loading');
+    try {
+      const r = await fetch(`/api/student/weekly-tests/${weeklyTestData.id}/submit`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          student_id: studentId,
+          section_answers: data.section_answers,
+          time_taken_secs: data.time_taken_secs
+        })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      setWeeklyResult(j);
+      setPhase('weekly-results');
+
+      // Refresh weekly test list
+      fetch(`/api/student/weekly-tests?level=${encodeURIComponent(studentLevel)}&student_id=${studentId}`)
+        .then(r => r.json())
+        .then(d => {
+          setWeeklyTests(d.tests || []);
+          setTestsThisWeek(d.tests_this_week || 0);
+        })
+        .catch(() => {});
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit');
+      setPhase('idle');
+    }
+  };
+
+  const viewWeeklyResults = async (testId: string) => {
+    if (!studentId) return;
+    setPhase('loading');
+    try {
+      const r = await fetch(`/api/student/weekly-tests/${testId}?student_id=${studentId}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      setWeeklyTestData(j.test);
+      setWeeklyResult({ attempt: j.attempt, test: j.test });
+      setTitle(j.test.title);
+      setPhase('weekly-results');
+    } catch {
+      setPhase('idle');
+    }
+  };
+
+  // Existing quiz functions
   const startQuiz = async (subject: string, level: string) => {
     setCurrentSubject(subject);
     setCurrentLevel(level);
@@ -103,9 +152,7 @@ export default function DashboardPage() {
       setQuestions(j.questions || []);
       setTitle(`${subject} Quiz — ${level}`);
       setPhase('quiz');
-    } catch {
-      setPhase('idle');
-    }
+    } catch { setPhase('idle'); }
   };
 
   const onComplete = (r: typeof result) => {
@@ -136,7 +183,7 @@ export default function DashboardPage() {
     setPhase('idle');
     setResult(null);
     fetch(`/api/student-stats?id=${studentId}`)
-      .then((r) => r.json())
+      .then(r => r.json())
       .then(setStats)
       .catch(() => {});
   };
@@ -152,30 +199,18 @@ export default function DashboardPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
-
-    if (file.type !== 'application/pdf') {
-      setPdfError('Please upload a PDF file.');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setPdfError('File too large. Maximum size is 10MB.');
-      return;
-    }
-
+    if (file.type !== 'application/pdf') { setPdfError('Please upload a PDF file.'); return; }
+    if (file.size > 10 * 1024 * 1024) { setPdfError('File too large. Maximum size is 10MB.'); return; }
     setPhase('pdf-grading');
     setTitle(`${currentSubject} — ${currentLevel} (PDF)`);
-    setPdfError(null);
-
     try {
       const formData = new FormData();
       formData.append('pdf', file);
       formData.append('subject', currentSubject);
       formData.append('level', currentLevel);
-
       const r = await fetch('/api/grade-pdf', { method: 'POST', body: formData });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Grading failed');
-
       setPdfGrading(j.grading);
       setPhase('pdf-results');
     } catch (err: any) {
@@ -183,11 +218,6 @@ export default function DashboardPage() {
       setPhase('idle');
     }
   };
-
-  // Extract student level from grade string like "Year 10 — GCSE"
-  const studentLevel = user?.grade?.includes('—')
-    ? user.grade.split('—')[1]?.trim()
-    : user?.grade?.split(' ').pop() || '';
 
   const startAssignedQuiz = async (quizId: string, quizTitle: string) => {
     setAssignedQuizId(quizId);
@@ -199,9 +229,7 @@ export default function DashboardPage() {
       if (!r.ok) throw new Error(j.error);
       setAssignedQuestions(j.questions || []);
       setPhase('assigned-quiz');
-    } catch {
-      setPhase('idle');
-    }
+    } catch { setPhase('idle'); }
   };
 
   const onAssignedComplete = async (r: { score: number; total: number; timeTakenSecs: number; answers: any[] }) => {
@@ -217,14 +245,11 @@ export default function DashboardPage() {
           time_taken_secs: r.timeTakenSecs
         })
       });
-
       const resultsR = await fetch(`/api/student/quizzes/${assignedQuizId}/results?student_id=${studentId}`);
       const resultsJ = await resultsR.json();
       setAssignedResult(resultsJ);
       setPhase('assigned-results');
-    } catch {
-      setPhase('idle');
-    }
+    } catch { setPhase('idle'); }
   };
 
   const viewAssignedResults = async (quizId: string) => {
@@ -238,9 +263,7 @@ export default function DashboardPage() {
       setTitle(j.quiz?.title || 'Quiz Results');
       setAssignedResult(j);
       setPhase('assigned-results');
-    } catch {
-      setPhase('idle');
-    }
+    } catch { setPhase('idle'); }
   };
 
   if (!user) {
@@ -251,6 +274,41 @@ export default function DashboardPage() {
     );
   }
 
+  // ─── Weekly Test Runner ───
+  if (phase === 'weekly-test' && weeklyTestData) {
+    return (
+      <WeeklyTestRunner
+        title={weeklyTestData.title || title}
+        sections={weeklyTestData.sections || []}
+        onExit={() => { setPhase('idle'); setWeeklyTestData(null); }}
+        onSubmit={onWeeklySubmit}
+      />
+    );
+  }
+
+  // ─── Weekly Test Results ───
+  if (phase === 'weekly-results' && weeklyResult) {
+    const attempt = weeklyResult.attempt || weeklyResult;
+    const test = weeklyResult.test || weeklyTestData;
+    return (
+      <WeeklyTestResults
+        title={test?.title || title}
+        totalScore={attempt.total_score}
+        totalQuestions={attempt.total_questions}
+        totalPercentage={attempt.total_percentage}
+        timeTakenSecs={attempt.time_taken_secs}
+        sectionResults={attempt.section_results || []}
+        sections={test?.sections}
+        onDone={() => {
+          setPhase('idle');
+          setWeeklyResult(null);
+          setWeeklyTestData(null);
+        }}
+      />
+    );
+  }
+
+  // ─── Existing quiz phases ───
   if (phase === 'quiz' && questions.length > 0) {
     return (
       <QuizRunner
@@ -287,10 +345,7 @@ export default function DashboardPage() {
         subject={currentSubject}
         level={currentLevel}
         grading={pdfGrading}
-        onDone={() => {
-          setPhase('idle');
-          setPdfGrading(null);
-        }}
+        onDone={() => { setPhase('idle'); setPdfGrading(null); }}
       />
     );
   }
@@ -302,18 +357,13 @@ export default function DashboardPage() {
         <main className="md:pl-[72px] min-h-screen flex items-center justify-center px-5">
           <div className="text-center">
             <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center animate-pulseGold"
-              style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}
-            >
+              style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}>
               <StarIcon className="w-9 h-9 fill-[#1a1304]" />
             </div>
-            <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">
-              Grading your work...
-            </h2>
-            <p className="text-ink-soft text-sm mt-2">
-              AI is analysing your {currentLevel} {currentSubject} submission
-            </p>
+            <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">Grading your work...</h2>
+            <p className="text-ink-soft text-sm mt-2">AI is analysing your {currentLevel} {currentSubject} submission</p>
             <div className="mt-6 flex justify-center gap-1">
-              {[0, 1, 2].map((i) => (
+              {[0, 1, 2].map(i => (
                 <div key={i} className="w-2 h-2 rounded-full bg-gold animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
               ))}
             </div>
@@ -324,25 +374,19 @@ export default function DashboardPage() {
   }
 
   if (phase === 'assigned-quiz' && assignedQuestions.length > 0) {
-    const runnerQuestions: Question[] = assignedQuestions.map((q) => ({
+    const runnerQuestions: Question[] = assignedQuestions.map(q => ({
       text: q.text,
       options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
       correct: -1,
       explanation: ''
     }));
-
     return (
       <QuizRunner
-        title={title}
-        subject=""
-        level=""
+        title={title} subject="" level=""
         questions={runnerQuestions}
         onExit={() => setPhase('idle')}
         onComplete={(r) => {
-          const answersWithIds = r!.answers.map((a, i) => ({
-            ...a,
-            id: assignedQuestions[i]?.id
-          }));
+          const answersWithIds = r!.answers.map((a, i) => ({ ...a, id: assignedQuestions[i]?.id }));
           onAssignedComplete({ ...r!, answers: answersWithIds });
         }}
       />
@@ -359,7 +403,6 @@ export default function DashboardPage() {
       explanation: q.explanation,
       selected: answerMap.get(q.id) ?? null
     }));
-
     return (
       <QuizResults
         title={assignedResult.quiz?.title || title}
@@ -373,12 +416,7 @@ export default function DashboardPage() {
         onSave={() => {
           setPhase('idle');
           setAssignedResult(null);
-          if (studentId) {
-            fetch(`/api/student-stats?id=${studentId}`)
-              .then((r) => r.json())
-              .then(setStats)
-              .catch(() => {});
-          }
+          if (studentId) fetch(`/api/student-stats?id=${studentId}`).then(r => r.json()).then(setStats).catch(() => {});
         }}
       />
     );
@@ -391,18 +429,12 @@ export default function DashboardPage() {
         <main className="md:pl-[72px] min-h-screen flex items-center justify-center px-5">
           <div className="text-center">
             <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center animate-pulseGold"
-              style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}
-            >
+              style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)', color: '#1a1304' }}>
               <StarIcon className="w-9 h-9 fill-[#1a1304]" />
             </div>
-            <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">
-              Preparing quiz...
-            </h2>
-            <p className="text-ink-soft text-sm mt-2">
-              Getting {currentLevel} {currentSubject} questions ready
-            </p>
+            <h2 className="font-serif text-2xl font-semibold mt-6 text-gradient">Preparing...</h2>
             <div className="mt-6 flex justify-center gap-1">
-              {[0, 1, 2].map((i) => (
+              {[0, 1, 2].map(i => (
                 <div key={i} className="w-2 h-2 rounded-full bg-gold animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
               ))}
             </div>
@@ -413,32 +445,125 @@ export default function DashboardPage() {
   }
 
   const recent: any[] = stats?.recent || [];
+  const canTakeTest = testsThisWeek < 2;
 
   return (
     <>
       <Sidebar user={user} />
       <main className="md:pl-[72px] pb-24 md:pb-10 min-h-screen">
         <div className="px-5 md:px-10 py-10 max-w-6xl mx-auto">
+          {/* Header */}
           <div className="flex items-start justify-between flex-wrap gap-4 mb-10">
             <div>
               {user.role === 'parent' && (
-                <p className="text-xs text-gold uppercase tracking-widest mb-1">
-                  Parent Dashboard
-                </p>
+                <p className="text-xs text-gold uppercase tracking-widest mb-1">Parent Dashboard</p>
               )}
-              <p className="text-xs text-ink-muted uppercase tracking-widest">
-                Welcome, {user.name.split(' ')[0]}
-              </p>
+              <p className="text-xs text-ink-muted uppercase tracking-widest">Welcome, {user.name.split(' ')[0]}</p>
               <h1 className="font-serif text-4xl md:text-5xl font-semibold text-gradient mt-2">
-                {user.role === 'parent' ? 'Your Child\'s Quizzes' : 'Take a Quiz'}
+                {user.role === 'parent' ? "Your Child's Tests" : 'Weekly Tests'}
               </h1>
               <p className="text-ink-soft mt-2">
-                {user.role === 'parent'
-                  ? 'Open a quiz below and let your child take it. Results are graded instantly with GL Assessment format scoring.'
-                  : 'Pick a subject and level to start a quiz. Graded instantly in GL Assessment format.'}
+                GL Assessment format — Maths, English, Verbal Reasoning & Non-Verbal Reasoning. 2 tests per week.
               </p>
             </div>
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/3">
+              <CalendarCheck className="w-5 h-5 text-gold" />
+              <div>
+                <p className="text-xs text-ink-muted">This Week</p>
+                <p className="font-serif text-lg font-semibold">
+                  <span className={testsThisWeek >= 2 ? 'text-red-400' : 'text-gold'}>{testsThisWeek}</span>
+                  <span className="text-ink-muted">/2 tests</span>
+                </p>
+              </div>
+            </div>
           </div>
+
+          {/* Hidden file input for PDF uploads */}
+          <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handlePdfFile} />
+          {pdfError && (
+            <div className="mb-6 p-4 rounded-xl border border-red-400/30 bg-red-400/10 text-red-300 text-sm">{pdfError}</div>
+          )}
+
+          {/* Weekly Tests */}
+          {weeklyTests.length > 0 && (
+            <div className="mb-10">
+              <h3 className="font-serif text-2xl font-semibold mb-5 flex items-center gap-2">
+                <CalendarCheck className="w-6 h-6 text-gold" />
+                Weekly Tests
+              </h3>
+              <div className="space-y-4">
+                {weeklyTests.map((t: any) => {
+                  const attempted = !!t.attempt?.completed;
+                  const subjects = (t.sections || []).reduce((acc: string[], s: any) => {
+                    if (!acc.includes(s.subject)) acc.push(s.subject);
+                    return acc;
+                  }, [] as string[]);
+                  const totalQs = (t.sections || []).reduce((a: number, s: any) => a + (s.questions?.length || s.question_count || 0), 0);
+
+                  return (
+                    <GlassCard key={t.id} className="!p-6" hover={false}>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <h4 className="font-serif text-lg font-semibold">{t.title}</h4>
+                            {!attempted && canTakeTest && (
+                              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-gold-dim border border-gold/30 text-gold-light font-semibold">
+                                New
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-3 mt-1.5 text-sm text-ink-muted flex-wrap">
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {Math.ceil(totalQs * 2 / 60)} mins</span>
+                            <span>{totalQs} questions</span>
+                            <span>{(t.sections || []).length} sections</span>
+                          </div>
+                          <div className="flex gap-1.5 mt-2">
+                            {subjects.map((s: string) => (
+                              <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-ink-muted">{s}</span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          {attempted ? (
+                            <>
+                              <div className="text-right">
+                                <p className="font-serif text-2xl font-semibold" style={{
+                                  color: (t.attempt.total_percentage || 0) >= 75 ? '#34d399' :
+                                    (t.attempt.total_percentage || 0) >= 50 ? '#fbbf24' : '#f87171'
+                                }}>
+                                  {t.attempt.total_percentage}%
+                                </p>
+                                <p className="text-xs text-ink-muted">{t.attempt.total_score}/{t.attempt.total_questions}</p>
+                              </div>
+                              <button
+                                onClick={() => viewWeeklyResults(t.id)}
+                                className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm hover:border-gold/30 transition flex items-center gap-1"
+                              >
+                                View Results <ChevronRight className="w-3 h-3" />
+                              </button>
+                            </>
+                          ) : canTakeTest ? (
+                            <button
+                              onClick={() => startWeeklyTest(t.id, t.title)}
+                              className="btn btn-gold !py-2 !px-5 !text-sm flex items-center gap-1"
+                            >
+                              Start Test <ChevronRight className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-2 text-sm text-ink-muted">
+                              <Lock className="w-4 h-4" />
+                              <span>Limit reached this week</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </GlassCard>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Assigned quizzes from admin */}
           <AssignedQuizList
@@ -448,83 +573,7 @@ export default function DashboardPage() {
             onViewResults={viewAssignedResults}
           />
 
-          {/* Hidden file input for PDF uploads */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={handlePdfFile}
-          />
-
-          {pdfError && (
-            <div className="mb-6 p-4 rounded-xl border border-red-400/30 bg-red-400/10 text-red-300 text-sm">
-              {pdfError}
-            </div>
-          )}
-
-          <div className="space-y-6">
-            {SUBJECTS.map((s) => {
-              const subStats = stats?.bySubject?.[s.name] || { count: 0, avg: 0 };
-              return (
-                <GlassCard key={s.name} className="!p-7 md:!p-9">
-                  <div className="flex items-start gap-5 flex-wrap">
-                    <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-white flex-shrink-0"
-                      style={{ background: s.grad, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.6)' }}
-                    >
-                      {s.icon}
-                    </div>
-                    <div className="flex-1 min-w-[220px]">
-                      <h2 className="font-serif text-2xl font-semibold">{s.name}</h2>
-                      <p className="text-ink-soft text-sm mt-1">{s.desc}</p>
-                    </div>
-                    <div className="flex gap-3 text-sm text-right">
-                      <div>
-                        <p className="text-xs text-ink-muted uppercase">Quizzes</p>
-                        <p className="font-serif text-xl font-semibold">{subStats.count}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-ink-muted uppercase">Avg</p>
-                        <p className="font-serif text-xl font-semibold text-gold">
-                          {subStats.avg ? `${Math.round(subStats.avg)}%` : '—'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <p className="text-xs text-ink-muted uppercase tracking-widest mb-2">Start a GL Assessment Quiz</p>
-                    <div className="flex flex-wrap gap-2">
-                      {LEVELS.map((l) => (
-                        <button
-                          key={l}
-                          onClick={() => startQuiz(s.name, l)}
-                          className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm text-ink-soft hover:border-gold/50 hover:bg-gold-dim hover:text-gold-light transition-all"
-                        >
-                          {l}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-xs text-ink-muted uppercase tracking-widest mb-2">Upload Work for Grading</p>
-                    <div className="flex flex-wrap gap-2">
-                      {LEVELS.map((l) => (
-                        <button
-                          key={`pdf-${l}`}
-                          onClick={() => startPdfUpload(s.name, l)}
-                          className="px-4 py-2 rounded-full border border-white/10 bg-white/3 text-sm text-ink-soft hover:border-cyan-400/50 hover:bg-cyan-400/10 hover:text-cyan-300 transition-all flex items-center gap-1.5"
-                        >
-                          <FileUp className="w-3.5 h-3.5" /> {l}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </GlassCard>
-              );
-            })}
-          </div>
-
+          {/* Recent scores */}
           {recent.length > 0 && (
             <div className="mt-12">
               <h3 className="font-serif text-2xl font-semibold mb-5">Recent Scores</h3>
@@ -537,18 +586,12 @@ export default function DashboardPage() {
                         <p className="text-xs text-ink-muted mt-0.5">{r.subject} &middot; {r.level}</p>
                       </div>
                       <div className="text-right">
-                        <p
-                          className="font-serif text-xl font-semibold"
-                          style={{
-                            color:
-                              r.percentage >= 75 ? '#34d399' : r.percentage >= 50 ? '#fbbf24' : '#f87171'
-                          }}
-                        >
+                        <p className="font-serif text-xl font-semibold" style={{
+                          color: r.percentage >= 75 ? '#34d399' : r.percentage >= 50 ? '#fbbf24' : '#f87171'
+                        }}>
                           {Math.round(r.percentage)}%
                         </p>
-                        <p className="text-xs text-ink-muted">
-                          {r.score}/{r.total}
-                        </p>
+                        <p className="text-xs text-ink-muted">{r.score}/{r.total}</p>
                       </div>
                     </div>
                   ))}

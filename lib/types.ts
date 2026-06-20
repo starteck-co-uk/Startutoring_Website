@@ -101,3 +101,51 @@ export interface QuizChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
+
+// ─── Weekly Test (GL Assessment format) ───
+export interface WeeklyTest {
+  id: string;
+  title: string;
+  level: string;
+  week_start: string; // ISO date of the Monday
+  status: 'draft' | 'published' | 'closed';
+  sections: WeeklyTestSection[];
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
+}
+
+export interface WeeklyTestSection {
+  id: string;
+  test_id: string;
+  subject: string;
+  topic_id: string;
+  topic_name: string;
+  questions: Question[];
+  question_count: number;
+}
+
+export interface WeeklyTestAttempt {
+  id: string;
+  test_id: string;
+  student_id: string;
+  started_at: string;
+  submitted_at?: string;
+  section_results: SectionResult[];
+  total_score: number;
+  total_questions: number;
+  total_percentage: number;
+  time_taken_secs: number;
+  completed: boolean;
+}
+
+export interface SectionResult {
+  section_id: string;
+  subject: string;
+  topic_id: string;
+  topic_name: string;
+  answers: Array<{ question_index: number; selected: number | null }>;
+  score: number;
+  total: number;
+  percentage: number;
+}
