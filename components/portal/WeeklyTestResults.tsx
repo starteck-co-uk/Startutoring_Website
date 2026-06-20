@@ -1,8 +1,9 @@
 'use client';
 
 import GlassCard from '@/components/GlassCard';
-import { CheckCircle2, XCircle, Trophy, BarChart3 } from 'lucide-react';
+import { CheckCircle2, XCircle, Trophy, BarChart3, Download } from 'lucide-react';
 import type { SectionResult } from '@/lib/types';
+import { generateWeeklyTestPdf } from '@/lib/generate-pdf';
 
 const SUBJECT_COLORS: Record<string, string> = {
   'Maths': '#a78bfa',
@@ -177,10 +178,41 @@ export default function WeeklyTestResults({
             </div>
           )}
 
-          <div className="text-center">
+          <div className="flex justify-center gap-3">
             <button onClick={onDone} className="btn btn-gold">
               Back to Dashboard
             </button>
+            {sections && sections.length > 0 && (
+              <button
+                onClick={() => {
+                  const pdfSections = sectionResults.map((sr) => {
+                    const sec = sections.find((s: any) => s.id === sr.section_id);
+                    return {
+                      subject: sr.subject,
+                      topicName: sr.topic_name,
+                      score: sr.score,
+                      total: sr.total,
+                      percentage: sr.percentage,
+                      questions: (sec?.questions || []).map((q: any, qi: number) => {
+                        const ans = sr.answers.find((a: any) => a.question_index === qi);
+                        return {
+                          text: q.text,
+                          options: q.options,
+                          correct: q.correct,
+                          explanation: q.explanation || '',
+                          selected: ans?.selected ?? null
+                        };
+                      })
+                    };
+                  });
+                  generateWeeklyTestPdf(title, totalScore, totalQuestions, totalPercentage, timeTakenSecs, pdfSections);
+                }}
+                className="px-5 py-2.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-semibold transition flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
+            )}
           </div>
         </div>
       </div>

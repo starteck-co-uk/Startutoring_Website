@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import type { Question } from '@/lib/types';
+import { Download } from 'lucide-react';
+import { generateQuizPdf } from '@/lib/generate-pdf';
 
 interface Props {
   title: string;
@@ -125,9 +127,18 @@ export default function QuizResults({
                   </div>
                 ))}
               </div>
-              <button onClick={onSave} disabled={saving} className="btn btn-gold mt-7 disabled:opacity-60">
-                {saving ? 'Saving...' : 'Save & Continue →'}
-              </button>
+              <div className="flex gap-3 mt-7">
+                <button onClick={onSave} disabled={saving} className="btn btn-gold disabled:opacity-60">
+                  {saving ? 'Saving...' : 'Save & Continue'}
+                </button>
+                <button
+                  onClick={() => generateQuizPdf(title, subject, level, score, total, timeTakenSecs, answers)}
+                  className="px-5 py-2.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-semibold transition flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </button>
+              </div>
             </div>
           </div>
 
