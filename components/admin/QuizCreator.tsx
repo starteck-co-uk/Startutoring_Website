@@ -5,7 +5,7 @@ import GlassCard from '@/components/GlassCard';
 import { Plus, Trash2, Wand2, PenLine } from 'lucide-react';
 import type { Question } from '@/lib/types';
 
-const SUBJECTS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning', 'Science'];
+const SUBJECTS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning'];
 const LEVELS = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
 
 interface Props {

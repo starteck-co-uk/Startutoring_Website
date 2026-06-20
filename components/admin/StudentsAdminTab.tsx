@@ -6,7 +6,7 @@ import type { Student } from '@/lib/types';
 
 type Status = 'active' | 'inactive' | 'paused';
 
-const SUBJECT_OPTIONS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning', 'Science', 'History', 'Geography', 'Computer Science'];
+const SUBJECT_OPTIONS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning'];
 const LEVEL_OPTIONS = [
   'Year 2 — KS1', 'Year 3 — KS2', 'Year 4 — KS2', 'Year 5 — KS2', 'Year 6 — 11+',
   'Year 7 — KS3', 'Year 8 — KS3', 'Year 9 — KS3',

@@ -21,7 +21,10 @@ import {
   Diamond,
   Circle,
   Triangle,
-  Award
+  Award,
+  Calculator,
+  Brain,
+  Puzzle
 } from 'lucide-react';
 
 const levelIcons: Record<string, React.ReactNode> = {
@@ -160,20 +163,12 @@ export default function HomePage() {
             <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
-                  icon: <span className="text-3xl font-bold">&#931;</span>,
+                  icon: <Calculator className="w-7 h-7" />,
                   name: 'Maths',
                   grad: 'linear-gradient(135deg, #a78bfa, #6366f1)',
                   glow: 'rgba(167, 139, 250, 0.2)',
                   desc: 'From times tables to calculus — build unshakeable numeric confidence and problem-solving skills.',
-                  levels: '11+, KS2, KS3, GCSE, A-Level, Degree'
-                },
-                {
-                  icon: <Zap className="w-7 h-7" />,
-                  name: 'Science',
-                  grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
-                  glow: 'rgba(236, 72, 153, 0.2)',
-                  desc: 'Physics, Chemistry and Biology — interactive experiments and exam-focused revision techniques.',
-                  levels: 'KS3, GCSE, A-Level'
+                  levels: '11+, KS2, KS3, GCSE, A-Level'
                 },
                 {
                   icon: <BookOpen className="w-7 h-7" />,
@@ -184,12 +179,20 @@ export default function HomePage() {
                   levels: '11+, KS2, KS3, GCSE'
                 },
                 {
-                  icon: <Settings className="w-7 h-7" />,
-                  name: 'Engineering & Business',
+                  icon: <Brain className="w-7 h-7" />,
+                  name: 'Verbal Reasoning',
                   grad: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   glow: 'rgba(245, 158, 11, 0.2)',
-                  desc: 'Specialist tuition in Engineering and Business subjects for GCSE, A-Level and Degree-level students.',
-                  levels: 'GCSE, A-Level, Degree'
+                  desc: 'Word patterns, analogies, logic and deduction — sharpen language-based reasoning for GL Assessment 11+ exams.',
+                  levels: '11+, KS2, KS3'
+                },
+                {
+                  icon: <Puzzle className="w-7 h-7" />,
+                  name: 'Non-Verbal Reasoning',
+                  grad: 'linear-gradient(135deg, #ec4899, #f472b6)',
+                  glow: 'rgba(236, 72, 153, 0.2)',
+                  desc: 'Shape patterns, spatial awareness, rotation and reflection — master visual problem-solving for 11+ success.',
+                  levels: '11+, KS2, KS3'
                 }
               ].map((s) => (
                 <GlassCard key={s.name} className="!p-8 flex flex-col group">

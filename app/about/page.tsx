@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import GlassCard from '@/components/GlassCard';
-import { BookOpen, Zap, PenTool } from 'lucide-react';
+import { BookOpen, Calculator, Brain, Puzzle } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'About Us — 10+ Years of Teaching Excellence in Stretford, Manchester',
@@ -96,10 +96,10 @@ export default function AboutPage() {
 
             <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { icon: <span className="text-2xl font-bold text-gold">&#931;</span>, name: 'Maths', desc: 'From arithmetic to calculus — build confidence step by step.' },
+                { icon: <Calculator className="w-6 h-6 text-gold" />, name: 'Maths', desc: 'From arithmetic to calculus — build confidence step by step.' },
                 { icon: <BookOpen className="w-6 h-6 text-gold" />, name: 'English', desc: 'Comprehension, writing, grammar and literature.' },
-                { icon: <Zap className="w-6 h-6 text-gold" />, name: 'Science', desc: 'Physics, Chemistry and Biology made accessible.' },
-                { icon: <PenTool className="w-6 h-6 text-gold" />, name: '11+ Prep', desc: 'Grammar school success through structured practice.' }
+                { icon: <Brain className="w-6 h-6 text-gold" />, name: 'Verbal Reasoning', desc: 'Word patterns, analogies and logical deduction for 11+ success.' },
+                { icon: <Puzzle className="w-6 h-6 text-gold" />, name: 'Non-Verbal Reasoning', desc: 'Shape patterns, spatial awareness and visual problem-solving.' }
               ].map((s) => (
                 <GlassCard key={s.name} className="!p-7">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gold-dim border border-gold/30">

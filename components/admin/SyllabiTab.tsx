@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import GlassCard from '@/components/GlassCard';
 
-const SUBJECTS = ['Maths', 'Science', 'English'];
+const SUBJECTS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning'];
 const LEVELS = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
 
 interface SyllabusEntry {

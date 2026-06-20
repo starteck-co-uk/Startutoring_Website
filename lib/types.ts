@@ -42,7 +42,7 @@ export interface Student {
   linked_students?: string[];
 }
 
-export type Subject = 'Maths' | 'Science' | 'English' | 'Verbal Reasoning' | 'Non-Verbal Reasoning';
+export type Subject = 'Maths' | 'English' | 'Verbal Reasoning' | 'Non-Verbal Reasoning';
 export type Level = '11+' | 'KS2' | 'KS3' | 'GCSE' | 'A-Level';
 export type QuizStatus = 'draft' | 'published' | 'closed';
 

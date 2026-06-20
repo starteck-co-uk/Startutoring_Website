@@ -26,6 +26,9 @@ export async function POST(req: NextRequest) {
           .eq('pin', pin)
           .single();
         if (data) {
+          if (data.role === 'student') {
+            return NextResponse.json({ error: 'Student accounts cannot log in directly. Please use your parent login.' }, { status: 403 });
+          }
           return NextResponse.json({ user: data });
         }
       } catch {
@@ -39,6 +42,10 @@ export async function POST(req: NextRequest) {
       (s) => s.email.toLowerCase() === emailLower && s.pin === pin
     );
     if (user) {
+      // Only admin and parent roles can log in — students do not have direct access
+      if (user.role === 'student') {
+        return NextResponse.json({ error: 'Student accounts cannot log in directly. Please use your parent login.' }, { status: 403 });
+      }
       return NextResponse.json({ user });
     }
 

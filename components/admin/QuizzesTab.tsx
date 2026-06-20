@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import QuizCreator from './QuizCreator';
 
-const SUBJECTS = ['Maths', 'Science', 'English'];
+const SUBJECTS = ['Maths', 'English', 'Verbal Reasoning', 'Non-Verbal Reasoning'];
 const LEVELS = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-yellow-400/10 border-yellow-400/30 text-yellow-300',
