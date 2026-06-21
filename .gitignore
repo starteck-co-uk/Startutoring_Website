@@ -10,3 +10,6 @@ npm-debug.log*
 next-env.d.ts
 
 .vercel
+
+# Raw source materials (organized copies live in public/resources/)
+materials/
