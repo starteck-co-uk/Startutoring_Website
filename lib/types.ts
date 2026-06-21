@@ -139,6 +139,20 @@ export interface WeeklyTestAttempt {
   completed: boolean;
 }
 
+// ─── Resources (downloadable PDFs for parents/students) ───
+export interface Resource {
+  id: string;
+  title: string;
+  description?: string;
+  subject?: string;
+  level?: string;
+  file_name: string;
+  file_size: number;
+  file_data: string; // base64 data URL
+  uploaded_by?: string;
+  created_at: string;
+}
+
 export interface SectionResult {
   section_id: string;
   subject: string;

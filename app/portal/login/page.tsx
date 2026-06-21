@@ -26,12 +26,12 @@ export default function PortalLoginPage() {
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Login failed');
-      localStorage.setItem('star_user', JSON.stringify(j.user));
+      // Store session per role so admin + parent can be logged in simultaneously
+      const storageKey = j.user.role === 'admin' ? 'star_user_admin' : 'star_user_parent';
+      localStorage.setItem(storageKey, JSON.stringify(j.user));
       if (j.user.role === 'admin') {
         router.push('/portal/admin');
       } else {
-        // Both parents and students go to dashboard
-        // Parents see their linked child's quizzes
         router.push('/portal/dashboard');
       }
     } catch (err: any) {

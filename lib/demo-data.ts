@@ -1,4 +1,4 @@
-import type { Student, Quiz, QuizQuestion, QuizAttempt, Syllabus, WeeklyTest, WeeklyTestAttempt } from './types';
+import type { Student, Quiz, QuizQuestion, QuizAttempt, Syllabus, WeeklyTest, WeeklyTestAttempt, Resource } from './types';
 
 export const DEMO_STUDENTS: Student[] = [
   {
@@ -307,5 +307,34 @@ export const demoWeeklyTestStore = {
     if (!a) return null;
     Object.assign(a, data, { submitted_at: new Date().toISOString(), completed: true });
     return a;
+  }
+};
+
+// ─── Resources store ───
+const resourcesStore: Resource[] = [];
+
+export const demoResourcesStore = {
+  all() { return resourcesStore; },
+  byId(id: string) { return resourcesStore.find(r => r.id === id) || null; },
+  insert(row: Partial<Resource>) {
+    const now = new Date().toISOString();
+    const item: Resource = {
+      id: row.id || `res-${Date.now()}`,
+      title: row.title || 'Untitled',
+      description: row.description || '',
+      subject: row.subject || '',
+      level: row.level || '',
+      file_name: row.file_name || 'file.pdf',
+      file_size: row.file_size || 0,
+      file_data: row.file_data || '',
+      uploaded_by: row.uploaded_by || '',
+      created_at: now
+    };
+    resourcesStore.unshift(item);
+    return item;
+  },
+  delete(id: string) {
+    const idx = resourcesStore.findIndex(r => r.id === id);
+    if (idx >= 0) resourcesStore.splice(idx, 1);
   }
 };

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FileText, BarChart3, LogOut, Star } from 'lucide-react';
+import { FileText, BarChart3, FolderOpen, LogOut, Star } from 'lucide-react';
 
 export interface PortalUser {
   id: string;
@@ -17,7 +17,8 @@ export interface PortalUser {
 
 const nav = [
   { href: '/portal/dashboard', icon: <FileText className="w-5 h-5" />, label: 'Quizzes' },
-  { href: '/portal/dashboard/analytics', icon: <BarChart3 className="w-5 h-5" />, label: 'Analytics' }
+  { href: '/portal/dashboard/analytics', icon: <BarChart3 className="w-5 h-5" />, label: 'Analytics' },
+  { href: '/portal/dashboard/resources', icon: <FolderOpen className="w-5 h-5" />, label: 'Resources' }
 ];
 
 export default function Sidebar({ user }: { user: PortalUser }) {
@@ -26,7 +27,7 @@ export default function Sidebar({ user }: { user: PortalUser }) {
   const [expanded, setExpanded] = useState(false);
 
   const logout = () => {
-    localStorage.removeItem('star_user');
+    localStorage.removeItem('star_user_parent');
     router.push('/portal/login');
   };
 
@@ -130,7 +131,8 @@ export function usePortalUser(): PortalUser | null {
   const router = useRouter();
   const [user, setUser] = useState<PortalUser | null>(null);
   useEffect(() => {
-    const raw = localStorage.getItem('star_user');
+    // Check new key first, fall back to legacy key for existing sessions
+    const raw = localStorage.getItem('star_user_parent') || localStorage.getItem('star_user');
     if (!raw) {
       router.replace('/portal/login');
       return;

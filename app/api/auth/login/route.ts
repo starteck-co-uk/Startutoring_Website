@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
           if (data.role === 'student') {
             return NextResponse.json({ error: 'Student accounts cannot log in directly. Please use your parent login.' }, { status: 403 });
           }
-          return NextResponse.json({ user: data });
+          const { pin: _pin, admin_notes, medical_notes, ...safeUser } = data;
+          return NextResponse.json({ user: safeUser });
         }
       } catch {
         // Supabase query failed (table missing, etc.) — fall through to demo
@@ -46,7 +47,8 @@ export async function POST(req: NextRequest) {
       if (user.role === 'student') {
         return NextResponse.json({ error: 'Student accounts cannot log in directly. Please use your parent login.' }, { status: 403 });
       }
-      return NextResponse.json({ user });
+      const { pin: _pin, admin_notes, medical_notes, ...safeUser } = user as any;
+      return NextResponse.json({ user: safeUser });
     }
 
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });

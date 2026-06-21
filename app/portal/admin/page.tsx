@@ -9,12 +9,13 @@ import QuizzesTab from '@/components/admin/QuizzesTab';
 import StudentsAdminTab from '@/components/admin/StudentsAdminTab';
 import LeadsTab from '@/components/admin/LeadsTab';
 import WeeklyTestsTab from '@/components/admin/WeeklyTestsTab';
+import ResourcesTab from '@/components/admin/ResourcesTab';
 import {
   LayoutDashboard, BookOpen, FileText, ClipboardList, Mail, Star,
-  Users, Settings, GraduationCap, PenTool, LogOut, Download, CalendarCheck
+  Users, Settings, GraduationCap, PenTool, LogOut, Download, CalendarCheck, FolderOpen
 } from 'lucide-react';
 
-type Tab = 'overview' | 'syllabi' | 'quizzes' | 'weekly-tests' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'leads' | 'settings';
+type Tab = 'overview' | 'syllabi' | 'quizzes' | 'weekly-tests' | 'resources' | 'assessments' | 'contacts' | 'feedback' | 'students' | 'leads' | 'settings';
 
 interface AdminUser {
   id: string;
@@ -31,7 +32,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const raw = localStorage.getItem('star_user');
+    // Check new key first, fall back to legacy key for existing sessions
+    const raw = localStorage.getItem('star_user_admin') || localStorage.getItem('star_user');
     if (!raw) { router.replace('/portal/login'); return; }
     try {
       const u = JSON.parse(raw);
@@ -42,7 +44,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'weekly-tests' || tab === 'students' || tab === 'feedback' || tab === 'leads') {
+    if (tab === 'settings' || tab === 'syllabi' || tab === 'quizzes' || tab === 'weekly-tests' || tab === 'resources' || tab === 'students' || tab === 'feedback' || tab === 'leads') {
       setLoading(false);
       return;
     }
@@ -55,7 +57,7 @@ export default function AdminDashboard() {
   }, [user, tab]);
 
   const logout = () => {
-    localStorage.removeItem('star_user');
+    localStorage.removeItem('star_user_admin');
     router.push('/portal/login');
   };
 
@@ -66,6 +68,7 @@ export default function AdminDashboard() {
     { id: 'syllabi', label: 'Syllabi', icon: <BookOpen className="w-4 h-4" /> },
     { id: 'quizzes', label: 'Quizzes', icon: <FileText className="w-4 h-4" /> },
     { id: 'weekly-tests', label: 'Weekly Tests', icon: <CalendarCheck className="w-4 h-4" /> },
+    { id: 'resources', label: 'Resources', icon: <FolderOpen className="w-4 h-4" /> },
     { id: 'assessments', label: 'Assessments', icon: <ClipboardList className="w-4 h-4" /> },
     { id: 'contacts', label: 'Messages', icon: <Mail className="w-4 h-4" /> },
     { id: 'feedback', label: 'Feedback', icon: <Star className="w-4 h-4" /> },
@@ -133,6 +136,7 @@ export default function AdminDashboard() {
             {tab === 'syllabi' && <SyllabiTab />}
             {tab === 'quizzes' && <QuizzesTab />}
             {tab === 'weekly-tests' && <WeeklyTestsTab />}
+            {tab === 'resources' && <ResourcesTab />}
             {tab === 'assessments' && <AssessmentsTab data={data} />}
             {tab === 'contacts' && <ContactsTab data={data} />}
             {tab === 'feedback' && <FeedbackTab />}

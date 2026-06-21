@@ -54,9 +54,13 @@ export default function DashboardPage() {
     ? user.linked_students[0]
     : user?.id;
 
-  const studentLevel = user?.grade?.includes('—')
-    ? user.grade.split('—')[1]?.trim()
-    : user?.grade?.split(' ').pop() || '';
+  // Derive level from the student's grade (not the parent's)
+  const gradeSource = (user?.role === 'parent' && studentProfile?.grade)
+    ? studentProfile.grade
+    : user?.grade || '';
+  const studentLevel = gradeSource.includes('—')
+    ? gradeSource.split('—')[1]?.trim()
+    : gradeSource.split(' ').pop() || '';
 
   useEffect(() => {
     if (!studentId) return;
@@ -65,13 +69,11 @@ export default function DashboardPage() {
       .then(setStats)
       .catch(() => setStats(null));
 
-    // Fetch linked student profile for parent dashboard
-    if (user?.role === 'parent') {
-      fetch(`/api/student/profile?id=${studentId}`)
-        .then(r => r.json())
-        .then(d => setStudentProfile(d.student || null))
-        .catch(() => setStudentProfile(null));
-    }
+    // Fetch student profile — needed for parent view AND to resolve the student's grade/level
+    fetch(`/api/student/profile?id=${studentId}`)
+      .then(r => r.json())
+      .then(d => setStudentProfile(d.student || null))
+      .catch(() => setStudentProfile(null));
   }, [studentId, user?.role]);
 
   // Load weekly tests
@@ -84,7 +86,7 @@ export default function DashboardPage() {
         setTestsThisWeek(d.tests_this_week || 0);
       })
       .catch(() => {});
-  }, [studentLevel, studentId]);
+  }, [studentLevel, studentId, studentProfile]);
 
   const startWeeklyTest = async (testId: string, testTitle: string) => {
     setTitle(testTitle);

@@ -47,7 +47,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         total_questions: graded.total_questions,
         total_percentage: graded.total_percentage,
         time_taken_secs: time_taken_secs || 0,
-        completed: true
+        completed: true,
+        started_at: new Date().toISOString(),
+        submitted_at: new Date().toISOString()
       }).select().single();
 
       if (error) throw error;

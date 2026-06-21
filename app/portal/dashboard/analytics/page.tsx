@@ -30,13 +30,22 @@ export default function AnalyticsPage() {
     bySubject: Record<string, { count: number; avg: number; trend: number }>;
     totals: { count: number; avg: number; bestSubject: string; totalQuestions: number };
   } | null>(null);
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+
+  const studentId = user?.role === 'parent' && user?.linked_students?.length
+    ? user.linked_students[0]
+    : user?.id;
 
   useEffect(() => {
-    if (!user) return;
-    fetch(`/api/student-stats?id=${user.id}`)
+    if (!studentId) return;
+    fetch(`/api/student-stats?id=${studentId}`)
       .then((r) => r.json())
       .then(setStats);
-  }, [user]);
+    fetch(`/api/student/profile?id=${studentId}`)
+      .then(r => r.json())
+      .then(d => setStudentProfile(d.student || null))
+      .catch(() => setStudentProfile(null));
+  }, [studentId]);
 
   if (!user) return null;
   const recent = stats?.recent || [];
@@ -64,22 +73,29 @@ export default function AnalyticsPage() {
       <Sidebar user={user} />
       <main className="md:pl-[72px] pb-24 md:pb-10 min-h-screen">
         <div className="px-5 md:px-10 py-10 max-w-6xl mx-auto">
-          {/* header */}
-          <div className="flex items-center gap-4 mb-10">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-[#1a1304]"
-              style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)' }}
-            >
-              {user.name[0]}
-            </div>
-            <div>
-              <p className="text-xs text-ink-muted uppercase tracking-widest">Analytics</p>
-              <h1 className="font-serif text-3xl md:text-4xl font-semibold text-gradient">
-                {user.name}
-              </h1>
-              {user.grade && <p className="text-ink-soft text-sm">{user.grade}</p>}
-            </div>
-          </div>
+          {/* header — show student's name, not parent's */}
+          {(() => {
+            const displayName = studentProfile?.name || user.name;
+            const displayGrade = studentProfile?.grade || user.grade;
+            const displayAvatar = studentProfile?.avatar || displayName[0];
+            return (
+              <div className="flex items-center gap-4 mb-10">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-[#1a1304]"
+                  style={{ background: 'linear-gradient(135deg, #ffd166, #f5b72f)' }}
+                >
+                  {displayAvatar}
+                </div>
+                <div>
+                  <p className="text-xs text-ink-muted uppercase tracking-widest">Analytics</p>
+                  <h1 className="font-serif text-3xl md:text-4xl font-semibold text-gradient">
+                    {displayName}
+                  </h1>
+                  {displayGrade && <p className="text-ink-soft text-sm">{displayGrade}</p>}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* stat cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
