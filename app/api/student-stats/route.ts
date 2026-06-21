@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
-import { demoQuizStore } from '@/lib/demo-data';
+import { demoQuizStore, demoWeeklyTestStore } from '@/lib/demo-data';
 
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
@@ -8,18 +8,79 @@ export async function GET(req: NextRequest) {
 
   let rows: any[] = [];
   const sb = getSupabase();
+
   if (sb) {
-    const { data } = await sb
+    // Get regular quiz results
+    const { data: quizData } = await sb
       .from('quiz_results')
       .select('*')
       .eq('student_id', id)
       .order('created_at', { ascending: false })
       .limit(50);
-    rows = data || [];
+
+    // Get weekly test attempts
+    const { data: weeklyData } = await sb
+      .from('weekly_test_attempts')
+      .select('*')
+      .eq('student_id', id)
+      .eq('completed', true)
+      .order('submitted_at', { ascending: false })
+      .limit(50);
+
+    rows = quizData || [];
+
+    // Convert weekly test section results into individual subject rows for analytics
+    for (const attempt of (weeklyData || [])) {
+      for (const sr of (attempt.section_results || [])) {
+        rows.push({
+          id: `${attempt.id}-${sr.section_id}`,
+          student_id: id,
+          subject: sr.subject,
+          level: '',
+          title: `Weekly Test — ${sr.topic_name}`,
+          score: sr.score,
+          total: sr.total,
+          percentage: sr.percentage,
+          time_taken_secs: attempt.time_taken_secs,
+          created_at: attempt.submitted_at || attempt.started_at,
+          source: 'weekly-test'
+        });
+      }
+    }
   } else {
-    rows = demoQuizStore.byStudent(id);
+    // Demo mode — combine quiz results + weekly test attempts
+    rows = [...demoQuizStore.byStudent(id)];
+
+    const weeklyAttempts = demoWeeklyTestStore.attemptsByStudent(id)
+      .filter(a => a.completed);
+
+    for (const attempt of weeklyAttempts) {
+      for (const sr of (attempt.section_results || [])) {
+        rows.push({
+          id: `${attempt.id}-${sr.section_id}`,
+          student_id: id,
+          subject: sr.subject,
+          level: '',
+          title: `Weekly Test — ${sr.topic_name}`,
+          score: sr.score,
+          total: sr.total,
+          percentage: sr.percentage,
+          time_taken_secs: attempt.time_taken_secs,
+          created_at: attempt.submitted_at || attempt.started_at,
+          source: 'weekly-test'
+        });
+      }
+    }
   }
 
+  // Sort all rows by date (most recent first)
+  rows.sort((a, b) => {
+    const da = new Date(a.created_at || 0).getTime();
+    const db = new Date(b.created_at || 0).getTime();
+    return db - da;
+  });
+
+  // Compute totals
   const totals = {
     count: rows.length,
     avg: rows.length ? rows.reduce((a, r) => a + (r.percentage || 0), 0) / rows.length : 0,
@@ -27,9 +88,11 @@ export async function GET(req: NextRequest) {
     bestSubject: '—'
   };
 
+  // Compute per-subject breakdown
   const bySubject: Record<string, { count: number; avg: number; trend: number }> = {};
   for (const r of rows) {
     const s = r.subject;
+    if (!s) continue;
     if (!bySubject[s]) bySubject[s] = { count: 0, avg: 0, trend: 0 };
     bySubject[s].count += 1;
     bySubject[s].avg += r.percentage || 0;

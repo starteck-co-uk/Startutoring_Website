@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import WeeklyTestCreator from './WeeklyTestCreator';
-import { Plus, Send, Archive, Trash2, Eye } from 'lucide-react';
+import { Plus, Send, Archive, Trash2, Users } from 'lucide-react';
 
 interface WeeklyTestSummary {
   id: string;
@@ -13,6 +13,8 @@ interface WeeklyTestSummary {
   status: string;
   sections: any[];
   created_at: string;
+  attempt_count?: number;
+  avg_score?: number;
 }
 
 export default function WeeklyTestsTab() {
@@ -116,6 +118,12 @@ export default function WeeklyTestsTab() {
                       <span>Week of {new Date(t.week_start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       <span>{(t.sections || []).length} sections</span>
                       <span>{totalQs} questions</span>
+                      {(t.attempt_count || 0) > 0 && (
+                        <span className="flex items-center gap-1 text-green-300">
+                          <Users className="w-3 h-3" />
+                          {t.attempt_count} attempt{t.attempt_count !== 1 ? 's' : ''} · avg {t.avg_score}%
+                        </span>
+                      )}
                     </div>
                     <div className="flex gap-1.5 mt-2">
                       {subjects.map((s: string) => (

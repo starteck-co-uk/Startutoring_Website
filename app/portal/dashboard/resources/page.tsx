@@ -14,6 +14,7 @@ interface ResourceItem {
   file_name: string;
   file_size: number;
   path: string;
+  source?: 'static' | 'uploaded';
 }
 
 const SUBJECT_COLORS: Record<string, string> = {
@@ -40,11 +41,20 @@ export default function ResourcesPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetch('/resources/manifest.json')
-      .then(r => r.json())
-      .then(data => setResources(data))
-      .catch(() => setResources([]))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch('/resources/manifest.json').then(r => r.json()).catch(() => []),
+      fetch('/api/resources').then(r => r.json()).then(d => d.resources || []).catch(() => [])
+    ]).then(([staticData, uploaded]) => {
+      const staticItems = staticData.map((r: any) => ({ ...r, source: 'static' }));
+      const uploadedItems = uploaded.map((r: any) => ({
+        ...r,
+        source: 'uploaded',
+        category: 'Uploaded by Admin',
+        subject: r.subject || 'General',
+        path: `/api/resources/${r.id}/download`
+      }));
+      setResources([...uploadedItems, ...staticItems]);
+    }).finally(() => setLoading(false));
   }, []);
 
   if (!user) return null;
