@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import { GL_SUBJECTS } from '@/lib/gl-topics';
-import { Plus, Trash2, Wand2, PenLine, ChevronDown, ChevronUp, Save, Send } from 'lucide-react';
+import { Plus, Trash2, Wand2, PenLine, ChevronDown, ChevronUp, Save, Send, Database, RefreshCw } from 'lucide-react';
 import type { Question } from '@/lib/types';
 
 const LEVELS = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
@@ -42,6 +42,7 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState<string | null>(null); // section id being generated
+  const [redoing, setRedoing] = useState<string | null>(null); // "secIdx-qIdx" being redone
 
   // Build sections from selected topics
   const [selectedTopics, setSelectedTopics] = useState<Record<string, string[]>>(() => {
@@ -144,12 +145,13 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
     });
   };
 
-  const generateForSection = async (secIdx: number) => {
+  const generateForSection = async (secIdx: number, source: 'ai' | 'bank') => {
     const sec = sections[secIdx];
     setGenerating(sec.id);
     setError(null);
     try {
-      const r = await fetch('/api/admin/generate-quiz', {
+      const endpoint = source === 'bank' ? '/api/admin/question-bank' : '/api/admin/generate-quiz';
+      const r = await fetch(endpoint, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -173,6 +175,41 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
       setError(`Failed to generate ${sec.subject} - ${sec.topic_name}: ${err.message}`);
     } finally {
       setGenerating(null);
+    }
+  };
+
+  const redoQuestionWithAI = async (secIdx: number, qIdx: number) => {
+    const sec = sections[secIdx];
+    const key = `${secIdx}-${qIdx}`;
+    setRedoing(key);
+    setError(null);
+    try {
+      const r = await fetch('/api/admin/generate-quiz', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          subject: sec.subject,
+          level,
+          count: 1,
+          topic: sec.topic_name
+        })
+      });
+      const j = await r.json();
+      if (j.questions && j.questions.length > 0) {
+        setSections(prev => {
+          const copy = [...prev];
+          const s = { ...copy[secIdx], questions: [...copy[secIdx].questions] };
+          s.questions[qIdx] = j.questions[0];
+          copy[secIdx] = s;
+          return copy;
+        });
+      } else {
+        throw new Error(j.error || 'No question generated');
+      }
+    } catch (err: any) {
+      setError(`Failed to redo Q${qIdx + 1}: ${err.message}`);
+    } finally {
+      setRedoing(null);
     }
   };
 
@@ -432,9 +469,19 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={(e) => { e.stopPropagation(); generateForSection(si); }}
-                  disabled={generating === sec.id}
+                  onClick={(e) => { e.stopPropagation(); generateForSection(si, 'bank'); }}
+                  disabled={!!generating}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-cyan-400/30 transition disabled:opacity-50 flex items-center gap-1"
+                  title="Fill from curated question bank"
+                >
+                  <Database className="w-3.5 h-3.5" />
+                  {generating === sec.id ? 'Filling...' : 'Bank Fill'}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); generateForSection(si, 'ai'); }}
+                  disabled={!!generating}
                   className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-gold/30 transition disabled:opacity-50 flex items-center gap-1"
+                  title="Generate with AI"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
                   {generating === sec.id ? 'Generating...' : 'AI Fill'}
@@ -450,14 +497,26 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
                   <div key={qi} className="p-4 rounded-xl bg-white/3 border border-white/5">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-ink-muted font-semibold">Q{qi + 1}</span>
-                      {sec.questions.length > 1 && (
+                      <div className="flex items-center gap-1">
                         <button
-                          onClick={() => removeQuestion(si, qi)}
-                          className="text-xs p-1 rounded hover:bg-red-400/10 text-red-300/60 hover:text-red-300 transition"
+                          onClick={() => redoQuestionWithAI(si, qi)}
+                          disabled={redoing === `${si}-${qi}`}
+                          className="text-xs p-1 rounded hover:bg-gold-dim text-ink-muted hover:text-gold-light transition disabled:opacity-50"
+                          title="Redo this question with AI"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          {redoing === `${si}-${qi}`
+                            ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            : <Wand2 className="w-3.5 h-3.5" />}
                         </button>
-                      )}
+                        {sec.questions.length > 1 && (
+                          <button
+                            onClick={() => removeQuestion(si, qi)}
+                            className="text-xs p-1 rounded hover:bg-red-400/10 text-red-300/60 hover:text-red-300 transition"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <textarea
                       className="field !bg-transparent !border-0 !p-0 !text-sm font-serif !min-h-[36px] resize-none w-full"
