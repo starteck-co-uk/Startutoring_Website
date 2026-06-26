@@ -180,19 +180,38 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
     setSaving(true);
     setError(null);
     try {
+      // Validate questions before saving
+      for (const sec of sections) {
+        const filledQs = sec.questions.filter(q => q.text.trim());
+        if (filledQs.length === 0) {
+          throw new Error(`Section "${sec.subject} — ${sec.topic_name}" has no questions filled in. Use AI Fill or enter questions manually.`);
+        }
+        for (let i = 0; i < filledQs.length; i++) {
+          const q = filledQs[i];
+          const emptyOpts = q.options.filter(o => !o.trim()).length;
+          if (emptyOpts > 0) {
+            throw new Error(`${sec.subject} — ${sec.topic_name}: Q${i + 1} has empty options. All 4 options are required.`);
+          }
+        }
+      }
+
       const finalTitle = title || `Weekly Test — ${level}`;
+      // Strip empty questions before sending
       const payload = {
         title: finalTitle,
         level,
         week_start: weekStart,
-        sections: sections.map(s => ({
-          id: s.id,
-          subject: s.subject,
-          topic_id: s.topic_id,
-          topic_name: s.topic_name,
-          questions: s.questions,
-          question_count: s.questions.length
-        }))
+        sections: sections.map(s => {
+          const validQs = s.questions.filter(q => q.text.trim());
+          return {
+            id: s.id,
+            subject: s.subject,
+            topic_id: s.topic_id,
+            topic_name: s.topic_name,
+            questions: validQs,
+            question_count: validQs.length
+          };
+        })
       };
 
       // Create the test

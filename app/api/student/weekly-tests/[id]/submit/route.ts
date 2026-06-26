@@ -19,6 +19,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (sb) {
       // Supabase mode
+
+      // Prevent double submission of same test
+      const { data: existing } = await sb.from('weekly_test_attempts')
+        .select('id')
+        .eq('student_id', student_id)
+        .eq('test_id', id)
+        .eq('completed', true)
+        .limit(1);
+      if (existing && existing.length > 0) {
+        return NextResponse.json({ error: 'You have already submitted this test' }, { status: 409 });
+      }
+
+      // Check weekly limit
       const now = new Date();
       const monday = new Date(now);
       monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
@@ -27,6 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const { data: weekAttempts } = await sb.from('weekly_test_attempts')
         .select('id')
         .eq('student_id', student_id)
+        .eq('completed', true)
         .gte('started_at', monday.toISOString());
 
       if ((weekAttempts || []).length >= 2) {
@@ -39,6 +53,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       const graded = gradeTest(test.sections, section_answers);
 
+      const submittedAt = new Date();
+      const startedAt = new Date(submittedAt.getTime() - (time_taken_secs || 0) * 1000);
+
       const { data: attempt, error } = await sb.from('weekly_test_attempts').insert({
         test_id: id,
         student_id,
@@ -48,15 +65,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         total_percentage: graded.total_percentage,
         time_taken_secs: time_taken_secs || 0,
         completed: true,
-        started_at: new Date().toISOString(),
-        submitted_at: new Date().toISOString()
+        started_at: startedAt.toISOString(),
+        submitted_at: submittedAt.toISOString()
       }).select().single();
 
       if (error) throw error;
       return NextResponse.json({ attempt, test });
     }
 
-    // Demo mode
+    // Demo mode — prevent double submission
+    const existingAttempt = demoWeeklyTestStore.attemptsByStudent(student_id)
+      .find(a => a.test_id === id && a.completed);
+    if (existingAttempt) {
+      return NextResponse.json({ error: 'You have already submitted this test' }, { status: 409 });
+    }
+
     const weekAttempts = demoWeeklyTestStore.attemptsThisWeek(student_id);
     if (weekAttempts.length >= 2) {
       return NextResponse.json({ error: 'Weekly test limit reached (2 per week)' }, { status: 429 });

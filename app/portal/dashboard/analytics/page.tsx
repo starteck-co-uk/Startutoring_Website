@@ -40,7 +40,8 @@ export default function AnalyticsPage() {
     if (!studentId) return;
     fetch(`/api/student-stats?id=${studentId}`)
       .then((r) => r.json())
-      .then(setStats);
+      .then(d => d.error ? setStats(null) : setStats(d))
+      .catch(() => setStats(null));
     fetch(`/api/student/profile?id=${studentId}`)
       .then(r => r.json())
       .then(d => setStudentProfile(d.student || null))
@@ -77,7 +78,7 @@ export default function AnalyticsPage() {
           {(() => {
             const displayName = studentProfile?.name || user.name;
             const displayGrade = studentProfile?.grade || user.grade;
-            const displayAvatar = studentProfile?.avatar || displayName[0];
+            const displayAvatar = studentProfile?.avatar || displayName?.[0] || '?';
             return (
               <div className="flex items-center gap-4 mb-10">
                 <div
@@ -100,7 +101,7 @@ export default function AnalyticsPage() {
           {/* stat cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
             {[
-              { l: 'Quizzes Taken', v: totals.count, c: '#f5b72f' },
+              { l: 'Assessments', v: totals.count, c: '#f5b72f' },
               { l: 'Average Score', v: `${Math.round(totals.avg)}%`, c: '#34d399' },
               { l: 'Best Subject', v: totals.bestSubject, c: '#a78bfa' },
               { l: 'Total Questions', v: totals.totalQuestions, c: '#22d3ee' }

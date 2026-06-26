@@ -80,11 +80,20 @@ export async function GET(req: NextRequest) {
     return db - da;
   });
 
-  // Compute totals
+  // Count unique assessments (weekly test sections from same attempt count as 1)
+  const weeklyAttemptIds = new Set(
+    rows.filter(r => r.source === 'weekly-test').map(r => r.id.split('-').slice(0, -1).join('-'))
+  );
+  const quizCount = rows.filter(r => r.source !== 'weekly-test').length;
+  const assessmentCount = quizCount + weeklyAttemptIds.size;
+
+  // Compute totals — weighted average by question count
+  const totalScore = rows.reduce((a, r) => a + (r.score || 0), 0);
+  const totalQuestions = rows.reduce((a, r) => a + (r.total || 0), 0);
   const totals = {
-    count: rows.length,
-    avg: rows.length ? rows.reduce((a, r) => a + (r.percentage || 0), 0) / rows.length : 0,
-    totalQuestions: rows.reduce((a, r) => a + (r.total || 0), 0),
+    count: assessmentCount,
+    avg: totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0,
+    totalQuestions,
     bestSubject: '—'
   };
 
