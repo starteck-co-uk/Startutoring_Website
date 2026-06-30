@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getAISettings, getActiveKey } from '@/lib/ai-settings';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -240,7 +241,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ grading, provider: active.provider });
   } catch (e: any) {
-    console.error('PDF grading error:', e.message);
+    logger.error('PDF grading failed', { error: e.message, stack: e.stack });
     return NextResponse.json(
       { error: e.message || 'Failed to grade PDF. Please try again.' },
       { status: 500 }

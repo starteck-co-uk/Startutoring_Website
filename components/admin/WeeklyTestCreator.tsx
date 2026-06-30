@@ -2,17 +2,26 @@
 
 import { useState } from 'react';
 import GlassCard from '@/components/GlassCard';
-import { GL_SUBJECTS } from '@/lib/gl-topics';
-import { Plus, Trash2, Wand2, PenLine, ChevronDown, ChevronUp, Save, Send, Database, RefreshCw } from 'lucide-react';
+import { GL_SECTIONS } from '@/lib/gl-topics';
+import { Plus, Trash2, Wand2, ChevronDown, ChevronUp, Save, Send, Database, RefreshCw, Layers } from 'lucide-react';
 import type { Question } from '@/lib/types';
 
 const LEVELS = ['11+', 'KS2', 'KS3', 'GCSE', 'A-Level'];
+
+const SUBJECT_COLORS: Record<string, string> = {
+  'Maths': '#a78bfa',
+  'English': '#22d3ee',
+  'Verbal Reasoning': '#f59e0b',
+  'Non-Verbal Reasoning': '#ec4899'
+};
 
 interface SectionDraft {
   id: string;
   subject: string;
   topic_id: string;
   topic_name: string;
+  question_count: number;
+  time_minutes: number;
   questions: Question[];
   collapsed: boolean;
 }
@@ -29,6 +38,27 @@ const EMPTY_Q = (): Question => ({
   explanation: ''
 });
 
+function kebab(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function buildSections(): SectionDraft[] {
+  return GL_SECTIONS.map(sec => {
+    const qs: Question[] = [];
+    for (let i = 0; i < sec.question_count; i++) qs.push(EMPTY_Q());
+    return {
+      id: `sec-${kebab(sec.name)}`,
+      subject: sec.name,
+      topic_id: sec.name,
+      topic_name: sec.name,
+      question_count: sec.question_count,
+      time_minutes: sec.time_minutes,
+      questions: qs,
+      collapsed: true
+    };
+  });
+}
+
 export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
   const [title, setTitle] = useState('');
   const [level, setLevel] = useState('11+');
@@ -41,61 +71,102 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
   const [step, setStep] = useState<'setup' | 'build'>('setup');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generating, setGenerating] = useState<string | null>(null); // section id being generated
-  const [redoing, setRedoing] = useState<string | null>(null); // "secIdx-qIdx" being redone
+  const [generating, setGenerating] = useState<string | null>(null);
+  const [redoing, setRedoing] = useState<string | null>(null);
+  const [generatingBoth, setGeneratingBoth] = useState<string | null>(null); // progress message for Set A & B
 
-  // Build sections from selected topics
-  const [selectedTopics, setSelectedTopics] = useState<Record<string, string[]>>(() => {
-    const m: Record<string, string[]> = {};
-    GL_SUBJECTS.forEach(s => { m[s.name] = s.topics.map(t => t.id); });
-    return m;
-  });
+  const totalQuestions = GL_SECTIONS.reduce((a, s) => a + s.question_count, 0);
+  const totalTime = GL_SECTIONS.reduce((a, s) => a + s.time_minutes, 0);
 
-  const toggleTopic = (subject: string, topicId: string) => {
-    setSelectedTopics(prev => {
-      const curr = prev[subject] || [];
-      return {
-        ...prev,
-        [subject]: curr.includes(topicId)
-          ? curr.filter(t => t !== topicId)
-          : [...curr, topicId]
-      };
-    });
+  const getAutoTitle = (suffix?: string) => {
+    const t = title.trim();
+    if (t) return suffix ? `${t} (${suffix})` : t;
+    const weekDate = new Date(weekStart);
+    const weekStr = weekDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const base = `Weekly Test — ${weekStr}`;
+    return suffix ? `${base} (${suffix})` : base;
   };
 
-  const totalTopics = Object.values(selectedTopics).reduce((a, v) => a + v.length, 0);
-  const totalQuestions = totalTopics * 20;
-
+  // ── Build step (single test) ──
   const startBuilding = () => {
     if (!title) {
-      const weekDate = new Date(weekStart);
-      const weekStr = weekDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      setTitle(`Weekly Test — ${weekStr}`);
+      setTitle(getAutoTitle());
     }
-
-    const newSections: SectionDraft[] = [];
-    GL_SUBJECTS.forEach(subj => {
-      const topics = selectedTopics[subj.name] || [];
-      subj.topics.forEach(t => {
-        if (topics.includes(t.id)) {
-          const qs: Question[] = [];
-          for (let i = 0; i < 20; i++) qs.push(EMPTY_Q());
-          newSections.push({
-            id: `sec-${subj.name}-${t.id}`,
-            subject: subj.name,
-            topic_id: t.id,
-            topic_name: t.name,
-            questions: qs,
-            collapsed: true
-          });
-        }
-      });
-    });
-
-    setSections(newSections);
+    setSections(buildSections());
     setStep('build');
   };
 
+  // ── Generate for one section ──
+  const generateForSection = async (secIdx: number, source: 'ai' | 'bank') => {
+    const sec = sections[secIdx];
+    setGenerating(sec.id);
+    setError(null);
+    try {
+      const endpoint = source === 'bank' ? '/api/admin/question-bank' : '/api/admin/generate-quiz';
+      const r = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          subject: sec.subject,
+          level,
+          count: sec.question_count,
+          topic: sec.topic_name
+        })
+      });
+      const j = await r.json();
+      if (j.questions) {
+        setSections(prev => {
+          const copy = [...prev];
+          copy[secIdx] = { ...copy[secIdx], questions: j.questions.slice(0, sec.question_count), collapsed: false };
+          return copy;
+        });
+      } else {
+        throw new Error(j.error || 'No questions generated');
+      }
+    } catch (err: any) {
+      setError(`Failed to generate ${sec.subject}: ${err.message}`);
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  // ── Redo single question with AI ──
+  const redoQuestionWithAI = async (secIdx: number, qIdx: number) => {
+    const sec = sections[secIdx];
+    const key = `${secIdx}-${qIdx}`;
+    setRedoing(key);
+    setError(null);
+    try {
+      const r = await fetch('/api/admin/generate-quiz', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          subject: sec.subject,
+          level,
+          count: 1,
+          topic: sec.topic_name
+        })
+      });
+      const j = await r.json();
+      if (j.questions && j.questions.length > 0) {
+        setSections(prev => {
+          const copy = [...prev];
+          const s = { ...copy[secIdx], questions: [...copy[secIdx].questions] };
+          s.questions[qIdx] = j.questions[0];
+          copy[secIdx] = s;
+          return copy;
+        });
+      } else {
+        throw new Error(j.error || 'No question generated');
+      }
+    } catch (err: any) {
+      setError(`Failed to redo Q${qIdx + 1}: ${err.message}`);
+    } finally {
+      setRedoing(null);
+    }
+  };
+
+  // ── Question editing helpers ──
   const updateQuestion = (secIdx: number, qIdx: number, field: keyof Question, value: any) => {
     setSections(prev => {
       const copy = [...prev];
@@ -145,113 +216,16 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
     });
   };
 
-  const generateForSection = async (secIdx: number, source: 'ai' | 'bank') => {
-    const sec = sections[secIdx];
-    setGenerating(sec.id);
-    setError(null);
-    try {
-      const endpoint = source === 'bank' ? '/api/admin/question-bank' : '/api/admin/generate-quiz';
-      const r = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          subject: sec.subject,
-          level,
-          count: 20,
-          topic: sec.topic_name
-        })
-      });
-      const j = await r.json();
-      if (j.questions) {
-        setSections(prev => {
-          const copy = [...prev];
-          copy[secIdx] = { ...copy[secIdx], questions: j.questions.slice(0, 20), collapsed: false };
-          return copy;
-        });
-      } else {
-        throw new Error(j.error || 'No questions generated');
-      }
-    } catch (err: any) {
-      setError(`Failed to generate ${sec.subject} - ${sec.topic_name}: ${err.message}`);
-    } finally {
-      setGenerating(null);
-    }
-  };
-
-  const redoQuestionWithAI = async (secIdx: number, qIdx: number) => {
-    const sec = sections[secIdx];
-    const key = `${secIdx}-${qIdx}`;
-    setRedoing(key);
-    setError(null);
-    try {
-      const r = await fetch('/api/admin/generate-quiz', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          subject: sec.subject,
-          level,
-          count: 1,
-          topic: sec.topic_name
-        })
-      });
-      const j = await r.json();
-      if (j.questions && j.questions.length > 0) {
-        setSections(prev => {
-          const copy = [...prev];
-          const s = { ...copy[secIdx], questions: [...copy[secIdx].questions] };
-          s.questions[qIdx] = j.questions[0];
-          copy[secIdx] = s;
-          return copy;
-        });
-      } else {
-        throw new Error(j.error || 'No question generated');
-      }
-    } catch (err: any) {
-      setError(`Failed to redo Q${qIdx + 1}: ${err.message}`);
-    } finally {
-      setRedoing(null);
-    }
-  };
-
+  // ── Save a single test ──
   const saveTest = async (publish: boolean) => {
     setSaving(true);
     setError(null);
     try {
-      // Validate questions before saving
-      for (const sec of sections) {
-        const filledQs = sec.questions.filter(q => q.text.trim());
-        if (filledQs.length === 0) {
-          throw new Error(`Section "${sec.subject} — ${sec.topic_name}" has no questions filled in. Use AI Fill or enter questions manually.`);
-        }
-        for (let i = 0; i < filledQs.length; i++) {
-          const q = filledQs[i];
-          const emptyOpts = q.options.filter(o => !o.trim()).length;
-          if (emptyOpts > 0) {
-            throw new Error(`${sec.subject} — ${sec.topic_name}: Q${i + 1} has empty options. All 4 options are required.`);
-          }
-        }
-      }
+      validateSections(sections);
 
-      const finalTitle = title || `Weekly Test — ${level}`;
-      // Strip empty questions before sending
-      const payload = {
-        title: finalTitle,
-        level,
-        week_start: weekStart,
-        sections: sections.map(s => {
-          const validQs = s.questions.filter(q => q.text.trim());
-          return {
-            id: s.id,
-            subject: s.subject,
-            topic_id: s.topic_id,
-            topic_name: s.topic_name,
-            questions: validQs,
-            question_count: validQs.length
-          };
-        })
-      };
+      const finalTitle = title || getAutoTitle();
+      const payload = buildPayload(finalTitle, sections);
 
-      // Create the test
       const r = await fetch('/api/admin/weekly-tests', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -260,7 +234,6 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
       const j = await r.json();
       if (!r.ok) throw new Error(j.error);
 
-      // Publish if requested
       if (publish && j.test?.id) {
         await fetch(`/api/admin/weekly-tests/${j.test.id}`, {
           method: 'PATCH',
@@ -277,14 +250,127 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
     }
   };
 
-  // Compute subject completion stats
-  const subjectStats = GL_SUBJECTS.map(subj => {
-    const subSections = sections.filter(s => s.subject === subj.name);
-    const filled = subSections.reduce((acc, s) =>
-      acc + s.questions.filter(q => q.text.trim()).length, 0);
-    const total = subSections.reduce((acc, s) => acc + s.questions.length, 0);
-    return { name: subj.name, filled, total, sections: subSections.length };
-  }).filter(s => s.sections > 0);
+  // ── Generate Set A & Set B ──
+  const generateBothSets = async () => {
+    setError(null);
+    setGeneratingBoth('Generating Set A...');
+
+    try {
+      const setATitle = getAutoTitle('Set A');
+      const setBTitle = getAutoTitle('Set B');
+
+      // Generate Set A
+      const setASections = await generateFullTest('A');
+      setGeneratingBoth('Saving Set A...');
+      const setAId = await saveAndPublish(setATitle, setASections);
+      if (!setAId) throw new Error('Failed to save Set A');
+
+      // Generate Set B
+      setGeneratingBoth('Generating Set B...');
+      const setBSections = await generateFullTest('B');
+      setGeneratingBoth('Saving Set B...');
+      const setBId = await saveAndPublish(setBTitle, setBSections);
+      if (!setBId) throw new Error('Failed to save Set B');
+
+      setGeneratingBoth(null);
+      onDone();
+    } catch (err: any) {
+      setError(err.message);
+      setGeneratingBoth(null);
+    }
+  };
+
+  async function generateFullTest(label: string): Promise<SectionDraft[]> {
+    const secs = buildSections();
+
+    for (let i = 0; i < secs.length; i++) {
+      const sec = secs[i];
+      setGeneratingBoth(`Generating Set ${label}: ${sec.subject} (${i + 1}/${secs.length})...`);
+
+      const r = await fetch('/api/admin/generate-quiz', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          subject: sec.subject,
+          level,
+          count: sec.question_count,
+          topic: sec.topic_name
+        })
+      });
+      const j = await r.json();
+      if (j.questions) {
+        secs[i] = { ...secs[i], questions: j.questions.slice(0, sec.question_count) };
+      } else {
+        throw new Error(j.error || `No questions generated for ${sec.subject}`);
+      }
+    }
+
+    return secs;
+  }
+
+  async function saveAndPublish(testTitle: string, secs: SectionDraft[]): Promise<string | null> {
+    const payload = buildPayload(testTitle, secs);
+
+    const r = await fetch('/api/admin/weekly-tests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error);
+
+    if (j.test?.id) {
+      await fetch(`/api/admin/weekly-tests/${j.test.id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'published' })
+      });
+      return j.test.id;
+    }
+    return null;
+  }
+
+  function buildPayload(testTitle: string, secs: SectionDraft[]) {
+    return {
+      title: testTitle,
+      level,
+      week_start: weekStart,
+      sections: secs.map(s => {
+        const validQs = s.questions.filter(q => q.text.trim());
+        return {
+          id: s.id,
+          subject: s.subject,
+          topic_id: s.topic_id,
+          topic_name: s.topic_name,
+          questions: validQs,
+          question_count: validQs.length,
+          time_minutes: s.time_minutes
+        };
+      })
+    };
+  }
+
+  function validateSections(secs: SectionDraft[]) {
+    for (const sec of secs) {
+      const filledQs = sec.questions.filter(q => q.text.trim());
+      if (filledQs.length === 0) {
+        throw new Error(`Section "${sec.subject}" has no questions filled in. Use AI Fill or enter questions manually.`);
+      }
+      for (let i = 0; i < filledQs.length; i++) {
+        const q = filledQs[i];
+        const emptyOpts = q.options.filter(o => !o.trim()).length;
+        if (emptyOpts > 0) {
+          throw new Error(`${sec.subject}: Q${i + 1} has empty options. All 4 options are required.`);
+        }
+      }
+    }
+  }
+
+  // ── Section stats for build step ──
+  const sectionStats = sections.map(sec => {
+    const filled = sec.questions.filter(q => q.text.trim()).length;
+    return { name: sec.subject, filled, total: sec.questions.length };
+  });
 
   // ─── Setup Step ───
   if (step === 'setup') {
@@ -293,7 +379,7 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
         <button onClick={onCancel} className="text-sm text-ink-muted hover:text-white mb-4">&larr; Back</button>
         <h2 className="font-serif text-3xl font-semibold text-gradient mb-2">Create Weekly Test</h2>
         <p className="text-ink-soft text-sm mb-8">
-          GL Assessment format — all 4 subjects, 20 questions per topic, 2 tests per student per week.
+          GL Assessment format — 4 sections, 260 questions, ~220 minutes total. Generate Set A &amp; Set B for the week.
         </p>
 
         <GlassCard className="!p-6 space-y-5" hover={false}>
@@ -324,51 +410,64 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
             </div>
           </div>
 
+          {/* Section summary cards */}
           <div>
-            <label className="field-label mb-3">Select Topics (20 questions each)</label>
-            <div className="space-y-4">
-              {GL_SUBJECTS.map(subj => (
-                <div key={subj.name}>
-                  <p className="text-sm font-semibold mb-2">{subj.name}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {subj.topics.map(t => {
-                      const active = (selectedTopics[subj.name] || []).includes(t.id);
-                      return (
-                        <button
-                          key={t.id}
-                          onClick={() => toggleTopic(subj.name, t.id)}
-                          className={`px-3 py-2 rounded-xl text-sm border transition ${
-                            active
-                              ? 'border-gold/60 bg-gold-dim text-gold-light'
-                              : 'border-white/10 bg-white/3 text-ink-soft hover:border-white/20'
-                          }`}
-                        >
-                          <span className="font-medium">{t.name}</span>
-                          <span className="text-xs text-ink-muted ml-1.5">20 Qs</span>
-                        </button>
-                      );
-                    })}
+            <label className="field-label mb-3">Test Structure (fixed)</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {GL_SECTIONS.map(sec => (
+                <div
+                  key={sec.name}
+                  className="p-4 rounded-xl bg-white/3 border border-white/10"
+                  style={{ borderLeftWidth: 4, borderLeftColor: SUBJECT_COLORS[sec.name] || '#888' }}
+                >
+                  <p className="text-sm font-semibold" style={{ color: SUBJECT_COLORS[sec.name] || '#fff' }}>
+                    {sec.name}
+                  </p>
+                  <p className="text-xs text-ink-muted mt-1">
+                    {sec.question_count} questions &middot; {sec.time_minutes} min
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {sec.topics.map(t => (
+                      <span key={t.id} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-ink-muted">
+                        {t.name}
+                      </span>
+                    ))}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Summary + action buttons */}
           <div className="p-4 rounded-xl bg-white/3 border border-white/10">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
-                <p className="text-sm font-semibold">{totalTopics} topics selected</p>
-                <p className="text-xs text-ink-muted">{totalQuestions} total questions across 4 subjects</p>
+                <p className="text-sm font-semibold">{totalQuestions} questions, {GL_SECTIONS.length} sections, ~{totalTime} minutes</p>
+                <p className="text-xs text-ink-muted">All 4 sections are always included with the fixed GL Assessment structure</p>
               </div>
-              <button
-                onClick={startBuilding}
-                disabled={totalTopics === 0}
-                className="btn btn-gold disabled:opacity-50"
-              >
-                Start Building Test
-              </button>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={startBuilding}
+                  className="text-xs px-4 py-2 rounded-xl border border-white/10 hover:border-gold/30 transition flex items-center gap-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  Start Building Single Test
+                </button>
+                <button
+                  onClick={generateBothSets}
+                  disabled={!!generatingBoth}
+                  className="btn btn-gold disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Layers className="w-4 h-4" />
+                  {generatingBoth || 'Generate Set A & Set B'}
+                </button>
+              </div>
             </div>
           </div>
+
+          {error && (
+            <div className="p-3 rounded-xl border border-red-400/30 bg-red-400/10 text-red-300 text-sm">{error}</div>
+          )}
         </GlassCard>
       </div>
     );
@@ -391,7 +490,7 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
             <span>{level}</span>
             <span>Week of {new Date(weekStart).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             <span>{sections.length} sections</span>
-            <span>{sections.reduce((a, s) => a + s.questions.length, 0)} questions</span>
+            <span>{sections.reduce((a, s) => a + s.questions.filter(q => q.text.trim()).length, 0)}/{totalQuestions} questions filled</span>
           </div>
         </div>
         <div className="flex gap-2">
@@ -418,9 +517,9 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
         <div className="mb-4 p-3 rounded-xl border border-red-400/30 bg-red-400/10 text-red-300 text-sm">{error}</div>
       )}
 
-      {/* Subject progress */}
+      {/* Section progress cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        {subjectStats.map(s => (
+        {sectionStats.map(s => (
           <GlassCard key={s.name} className="!p-4" hover={false}>
             <p className="text-xs text-ink-muted uppercase tracking-widest">{s.name}</p>
             <p className="font-serif text-xl font-semibold mt-1">
@@ -442,131 +541,139 @@ export default function WeeklyTestCreator({ onDone, onCancel }: Props) {
         ))}
       </div>
 
-      {/* Sections */}
+      {/* Section cards */}
       <div className="space-y-4">
-        {sections.map((sec, si) => (
-          <GlassCard
-            key={sec.id}
-            className="!p-0 overflow-hidden"
-            hover={false}
-            style={{ borderLeft: `4px solid ${
-              sec.subject === 'Maths' ? '#a78bfa' :
-              sec.subject === 'English' ? '#22d3ee' :
-              sec.subject === 'Verbal Reasoning' ? '#f59e0b' :
-              '#ec4899'
-            }` }}
-          >
-            {/* Section header */}
-            <div
-              className="flex items-center justify-between p-5 cursor-pointer hover:bg-white/3 transition"
-              onClick={() => toggleCollapse(si)}
+        {sections.map((sec, si) => {
+          const glSection = GL_SECTIONS.find(s => s.name === sec.subject);
+          return (
+            <GlassCard
+              key={sec.id}
+              className="!p-0 overflow-hidden"
+              hover={false}
+              style={{ borderLeft: `4px solid ${SUBJECT_COLORS[sec.subject] || '#888'}` }}
             >
-              <div className="flex items-center gap-3">
-                <div>
-                  <h4 className="font-serif text-lg font-semibold">{sec.subject}</h4>
-                  <p className="text-sm text-ink-muted">{sec.topic_name} &middot; {sec.questions.filter(q => q.text.trim()).length}/{sec.questions.length} questions filled</p>
+              {/* Section header */}
+              <div
+                className="flex items-center justify-between p-5 cursor-pointer hover:bg-white/3 transition"
+                onClick={() => toggleCollapse(si)}
+              >
+                <div className="flex items-center gap-3">
+                  <div>
+                    <h4 className="font-serif text-lg font-semibold">{sec.subject}</h4>
+                    <p className="text-sm text-ink-muted">
+                      {sec.question_count} questions &middot; {sec.time_minutes} min
+                      {glSection && (
+                        <span className="ml-2 text-ink-muted/60">
+                          ({glSection.topics.map(t => t.name).join(', ')})
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      {sec.questions.filter(q => q.text.trim()).length}/{sec.questions.length} questions filled
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); generateForSection(si, 'bank'); }}
+                    disabled={!!generating}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-cyan-400/30 transition disabled:opacity-50 flex items-center gap-1"
+                    title="Fill from curated question bank"
+                  >
+                    <Database className="w-3.5 h-3.5" />
+                    {generating === sec.id ? 'Filling...' : 'Bank Fill'}
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); generateForSection(si, 'ai'); }}
+                    disabled={!!generating}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-gold/30 transition disabled:opacity-50 flex items-center gap-1"
+                    title="Generate with AI"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    {generating === sec.id ? 'Generating...' : 'AI Fill'}
+                  </button>
+                  {sec.collapsed ? <ChevronDown className="w-5 h-5 text-ink-muted" /> : <ChevronUp className="w-5 h-5 text-ink-muted" />}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => { e.stopPropagation(); generateForSection(si, 'bank'); }}
-                  disabled={!!generating}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-cyan-400/30 transition disabled:opacity-50 flex items-center gap-1"
-                  title="Fill from curated question bank"
-                >
-                  <Database className="w-3.5 h-3.5" />
-                  {generating === sec.id ? 'Filling...' : 'Bank Fill'}
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); generateForSection(si, 'ai'); }}
-                  disabled={!!generating}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-gold/30 transition disabled:opacity-50 flex items-center gap-1"
-                  title="Generate with AI"
-                >
-                  <Wand2 className="w-3.5 h-3.5" />
-                  {generating === sec.id ? 'Generating...' : 'AI Fill'}
-                </button>
-                {sec.collapsed ? <ChevronDown className="w-5 h-5 text-ink-muted" /> : <ChevronUp className="w-5 h-5 text-ink-muted" />}
-              </div>
-            </div>
 
-            {/* Questions */}
-            {!sec.collapsed && (
-              <div className="px-5 pb-5 space-y-4 border-t border-white/5 pt-4">
-                {sec.questions.map((q, qi) => (
-                  <div key={qi} className="p-4 rounded-xl bg-white/3 border border-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-ink-muted font-semibold">Q{qi + 1}</span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => redoQuestionWithAI(si, qi)}
-                          disabled={redoing === `${si}-${qi}`}
-                          className="text-xs p-1 rounded hover:bg-gold-dim text-ink-muted hover:text-gold-light transition disabled:opacity-50"
-                          title="Redo this question with AI"
-                        >
-                          {redoing === `${si}-${qi}`
-                            ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            : <Wand2 className="w-3.5 h-3.5" />}
-                        </button>
-                        {sec.questions.length > 1 && (
+              {/* Questions */}
+              {!sec.collapsed && (
+                <div className="px-5 pb-5 space-y-4 border-t border-white/5 pt-4">
+                  {sec.questions.map((q, qi) => (
+                    <div key={qi} className="p-4 rounded-xl bg-white/3 border border-white/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-ink-muted font-semibold">Q{qi + 1}</span>
+                        <div className="flex items-center gap-1">
                           <button
-                            onClick={() => removeQuestion(si, qi)}
-                            className="text-xs p-1 rounded hover:bg-red-400/10 text-red-300/60 hover:text-red-300 transition"
+                            onClick={() => redoQuestionWithAI(si, qi)}
+                            disabled={redoing === `${si}-${qi}`}
+                            className="text-xs p-1 rounded hover:bg-gold-dim text-ink-muted hover:text-gold-light transition disabled:opacity-50"
+                            title="Redo this question with AI"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            {redoing === `${si}-${qi}`
+                              ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              : <Wand2 className="w-3.5 h-3.5" />}
                           </button>
-                        )}
-                      </div>
-                    </div>
-                    <textarea
-                      className="field !bg-transparent !border-0 !p-0 !text-sm font-serif !min-h-[36px] resize-none w-full"
-                      value={q.text}
-                      onChange={(e) => updateQuestion(si, qi, 'text', e.target.value)}
-                      placeholder="Enter question text..."
-                      rows={2}
-                    />
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {q.options.map((opt, oi) => (
-                        <div key={oi} className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => updateQuestion(si, qi, 'correct', oi)}
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 border transition ${
-                              q.correct === oi
-                                ? 'bg-green-400/20 border-green-400/50 text-green-300'
-                                : 'bg-white/3 border-white/10 text-ink-muted hover:border-white/30'
-                            }`}
-                          >
-                            {String.fromCharCode(65 + oi)}
-                          </button>
-                          <input
-                            className="field !py-1 !text-xs flex-1"
-                            value={opt}
-                            onChange={(e) => updateOption(si, qi, oi, e.target.value)}
-                            placeholder={`Option ${String.fromCharCode(65 + oi)}`}
-                          />
+                          {sec.questions.length > 1 && (
+                            <button
+                              onClick={() => removeQuestion(si, qi)}
+                              className="text-xs p-1 rounded hover:bg-red-400/10 text-red-300/60 hover:text-red-300 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
-                      ))}
+                      </div>
+                      <textarea
+                        className="field !bg-transparent !border-0 !p-0 !text-sm font-serif !min-h-[36px] resize-none w-full"
+                        value={q.text}
+                        onChange={(e) => updateQuestion(si, qi, 'text', e.target.value)}
+                        placeholder="Enter question text..."
+                        rows={2}
+                      />
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {q.options.map((opt, oi) => (
+                          <div key={oi} className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => updateQuestion(si, qi, 'correct', oi)}
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 border transition ${
+                                q.correct === oi
+                                  ? 'bg-green-400/20 border-green-400/50 text-green-300'
+                                  : 'bg-white/3 border-white/10 text-ink-muted hover:border-white/30'
+                              }`}
+                            >
+                              {String.fromCharCode(65 + oi)}
+                            </button>
+                            <input
+                              className="field !py-1 !text-xs flex-1"
+                              value={opt}
+                              onChange={(e) => updateOption(si, qi, oi, e.target.value)}
+                              placeholder={`Option ${String.fromCharCode(65 + oi)}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <textarea
+                        className="field !text-xs !min-h-[30px] mt-2 resize-none"
+                        value={q.explanation}
+                        onChange={(e) => updateQuestion(si, qi, 'explanation', e.target.value)}
+                        placeholder="Explanation (shown after grading)..."
+                        rows={1}
+                      />
                     </div>
-                    <textarea
-                      className="field !text-xs !min-h-[30px] mt-2 resize-none"
-                      value={q.explanation}
-                      onChange={(e) => updateQuestion(si, qi, 'explanation', e.target.value)}
-                      placeholder="Explanation (shown after grading)..."
-                      rows={1}
-                    />
-                  </div>
-                ))}
+                  ))}
 
-                <button
-                  onClick={() => addQuestion(si)}
-                  className="w-full py-3 rounded-xl border border-dashed border-white/10 hover:border-gold/30 text-sm text-ink-muted hover:text-gold-light transition flex items-center justify-center gap-1.5"
-                >
-                  <Plus className="w-4 h-4" /> Add Question
-                </button>
-              </div>
-            )}
-          </GlassCard>
-        ))}
+                  <button
+                    onClick={() => addQuestion(si)}
+                    className="w-full py-3 rounded-xl border border-dashed border-white/10 hover:border-gold/30 text-sm text-ink-muted hover:text-gold-light transition flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" /> Add Question
+                  </button>
+                </div>
+              )}
+            </GlassCard>
+          );
+        })}
       </div>
     </div>
   );

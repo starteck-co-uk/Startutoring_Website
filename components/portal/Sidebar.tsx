@@ -28,6 +28,9 @@ export default function Sidebar({ user }: { user: PortalUser }) {
 
   const logout = () => {
     localStorage.removeItem('star_user_parent');
+    localStorage.removeItem('star_user_admin');
+    localStorage.removeItem('star_user');
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     router.push('/portal/login');
   };
 
@@ -118,7 +121,7 @@ export default function Sidebar({ user }: { user: PortalUser }) {
             </Link>
           );
         })}
-        <button onClick={logout} className="flex flex-col items-center gap-1 px-4 py-2 text-xs text-ink-soft">
+        <button onClick={logout} className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-xs text-ink-soft hover:text-red-300 transition">
           <LogOut className="w-5 h-5" />
           Logout
         </button>

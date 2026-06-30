@@ -58,6 +58,9 @@ export default function AdminDashboard() {
 
   const logout = () => {
     localStorage.removeItem('star_user_admin');
+    localStorage.removeItem('star_user_parent');
+    localStorage.removeItem('star_user');
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     router.push('/portal/login');
   };
 

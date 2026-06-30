@@ -4,6 +4,7 @@ import { generateQuestions } from '@/lib/ai-generate';
 import { getAdminSupabase, getSupabase } from '@/lib/supabase';
 import { demoSyllabiStore } from '@/lib/demo-data';
 import { getFallback } from '@/lib/fallback-questions';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const maxDuration = 45;
@@ -123,7 +124,7 @@ export async function POST(req: NextRequest) {
         hasSyllabus: !!syllabusContent
       });
     } catch (err: any) {
-      console.error(`Admin quiz generation failed (${active.provider}):`, err.message);
+      logger.error('Quiz generation failed', { provider: active.provider, error: err.message, subject, level, count });
       return NextResponse.json({
         questions: getFallback(subject, level, count),
         source: 'fallback-error',

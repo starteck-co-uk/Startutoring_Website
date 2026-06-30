@@ -123,6 +123,7 @@ export interface WeeklyTestSection {
   topic_name: string;
   questions: Question[];
   question_count: number;
+  time_minutes?: number; // per-section time limit
 }
 
 export interface WeeklyTestAttempt {

@@ -610,7 +610,7 @@ export default function DashboardPage() {
                             )}
                           </div>
                           <div className="flex gap-3 mt-1.5 text-sm text-ink-muted flex-wrap">
-                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {Math.ceil(totalQs * 2 / 60)} mins</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {(t.sections || []).reduce((a: number, s: any) => a + (s.time_minutes || 50), 0)} mins</span>
                             <span>{totalQs} questions</span>
                             <span>{(t.sections || []).length} sections</span>
                           </div>

@@ -28,13 +28,14 @@ interface Props {
 export default function AssignedQuizList({ studentId, level, onTakeQuiz, onViewResults }: Props) {
   const [quizzes, setQuizzes] = useState<AssignedQuiz[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     if (!level || !studentId) return;
     fetch(`/api/student/quizzes?level=${encodeURIComponent(level)}&student_id=${studentId}`)
       .then((r) => r.json())
       .then((d) => setQuizzes(d.quizzes || []))
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
   }, [level, studentId]);
 
@@ -46,6 +47,9 @@ export default function AssignedQuizList({ studentId, level, onTakeQuiz, onViewR
     );
   }
 
+  if (fetchError) {
+    return <p className="text-sm text-red-300/70 py-4">Failed to load assigned quizzes.</p>;
+  }
   if (quizzes.length === 0) return null;
 
   return (

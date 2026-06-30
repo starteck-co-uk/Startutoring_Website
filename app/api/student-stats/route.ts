@@ -6,6 +6,14 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
+  // Access control: middleware sets x-user-id/x-user-role from signed cookie
+  const userId = req.headers.get('x-user-id');
+  const userRole = req.headers.get('x-user-role');
+  if (userId && userRole !== 'admin' && userId !== id) {
+    // Non-admin can only access their own stats (parent access handled via linked_students on client)
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   let rows: any[] = [];
   const sb = getSupabase();
 

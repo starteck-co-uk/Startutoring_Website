@@ -237,10 +237,11 @@ export function generateWeeklyTestPdf(
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(30, 30, 30);
-    doc.text(`${sec.subject} — ${sec.topicName}`, 14, y);
+    const sectionLabel = sec.topicName !== sec.subject ? `${sec.subject} — ${sec.topicName}` : sec.subject;
+    doc.text(sectionLabel, 14, y);
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
-    doc.text(`(${sec.score}/${sec.total})`, 14 + doc.getTextWidth(`${sec.subject} — ${sec.topicName}  `), y);
+    doc.text(`(${sec.score}/${sec.total})`, 14 + doc.getTextWidth(`${sectionLabel}  `), y);
     y += 7;
 
     for (let i = 0; i < sec.questions.length; i++) {

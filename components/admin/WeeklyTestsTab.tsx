@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import WeeklyTestCreator from './WeeklyTestCreator';
-import { Plus, Send, Archive, Trash2, Users } from 'lucide-react';
+import { Plus, Send, Archive, Trash2, Users, Zap } from 'lucide-react';
 
 interface WeeklyTestSummary {
   id: string;
@@ -21,6 +21,7 @@ export default function WeeklyTestsTab() {
   const [tests, setTests] = useState<WeeklyTestSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [autoGenerating, setAutoGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
@@ -82,12 +83,35 @@ export default function WeeklyTestsTab() {
         <div>
           <h2 className="font-serif text-3xl font-semibold text-gradient">Weekly Tests</h2>
           <p className="text-ink-soft text-sm mt-1">
-            GL Assessment format — 4 subjects, 20 questions per topic. Students get 2 per week.
+            GL Assessment format — 4 sections (Maths, English, VR, NVR), 260 questions per test. 2 sets per week.
           </p>
         </div>
-        <button onClick={() => setCreating(true)} className="btn btn-gold flex items-center gap-1.5">
-          <Plus className="w-4 h-4" /> Create Weekly Test
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={async () => {
+              setAutoGenerating(true);
+              setError(null);
+              try {
+                const r = await fetch('/api/cron/generate-tests');
+                const j = await r.json();
+                if (!r.ok) throw new Error(j.error);
+                refresh();
+              } catch (e: any) {
+                setError(e.message);
+              } finally {
+                setAutoGenerating(false);
+              }
+            }}
+            disabled={autoGenerating}
+            className="text-xs px-4 py-2.5 rounded-full border border-white/10 hover:border-cyan-400/30 bg-white/5 hover:bg-white/10 transition flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {autoGenerating ? 'Generating Set A & B...' : 'Auto-Generate This Week'}
+          </button>
+          <button onClick={() => setCreating(true)} className="btn btn-gold flex items-center gap-1.5">
+            <Plus className="w-4 h-4" /> Create Weekly Test
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -118,6 +142,7 @@ export default function WeeklyTestsTab() {
                       <span>Week of {new Date(t.week_start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       <span>{(t.sections || []).length} sections</span>
                       <span>{totalQs} questions</span>
+                      <span>{(t.sections || []).reduce((a: number, s: any) => a + (s.time_minutes || 50), 0)} mins</span>
                       {(t.attempt_count || 0) > 0 && (
                         <span className="flex items-center gap-1 text-green-300">
                           <Users className="w-3 h-3" />

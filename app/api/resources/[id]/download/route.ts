@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 import { demoResourcesStore } from '@/lib/demo-data';
 
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^\w\-. ]/g, '_').substring(0, 255);
+}
+
 // GET — download a resource file
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,7 +28,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return new NextResponse(buffer, {
         headers: {
           'Content-Type': mimeType,
-          'Content-Disposition': `attachment; filename="${data.file_name}"`,
+          'Content-Disposition': `attachment; filename="${sanitizeFilename(data.file_name)}"`,
           'Content-Length': String(buffer.length),
         },
       });
@@ -46,7 +50,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return new NextResponse(buffer, {
     headers: {
       'Content-Type': mimeType,
-      'Content-Disposition': `attachment; filename="${resource.file_name}"`,
+      'Content-Disposition': `attachment; filename="${sanitizeFilename(resource.file_name)}"`,
       'Content-Length': String(buffer.length),
     },
   });

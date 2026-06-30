@@ -95,8 +95,8 @@ export default function WeeklyTestResults({
                   <div className="flex items-center gap-3 mb-3">
                     <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color }} />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">{sr.topic_name}</h4>
-                      <p className="text-xs text-ink-muted">{sr.subject}</p>
+                      <h4 className="font-semibold truncate">{sr.subject}</h4>
+                      <p className="text-xs text-ink-muted">{sr.topic_name !== sr.subject ? sr.topic_name : `${sr.total} questions`}</p>
                     </div>
                     <p className="font-serif text-2xl font-bold" style={{
                       color: sr.percentage >= 75 ? '#34d399' : sr.percentage >= 50 ? '#fbbf24' : '#f87171'
@@ -130,7 +130,7 @@ export default function WeeklyTestResults({
                   <div key={sec.id} className="mb-6">
                     <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                      {sec.subject} — {sec.topic_name}
+                      {sec.subject}{sec.topic_name !== sec.subject ? ` — ${sec.topic_name}` : ''}
                       <span className="text-ink-muted">({sr.score}/{sr.total})</span>
                     </h4>
                     <div className="space-y-2">

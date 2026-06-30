@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import type { Question } from '@/lib/types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Clock, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 
 interface TestSection {
   id: string;
@@ -11,6 +10,7 @@ interface TestSection {
   topic_name: string;
   questions: Array<{ text: string; options: string[] }>;
   question_count: number;
+  time_minutes?: number;
 }
 
 interface Props {
@@ -30,6 +30,8 @@ const SUBJECT_COLORS: Record<string, string> = {
   'Non-Verbal Reasoning': '#ec4899'
 };
 
+const DEFAULT_SECTION_MINUTES = 50;
+
 export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: Props) {
   const [sectionIdx, setSectionIdx] = useState(0);
   const [questionIdx, setQuestionIdx] = useState(0);
@@ -38,29 +40,125 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
     sections.forEach(s => { m[s.id] = Array(s.questions.length).fill(null); });
     return m;
   });
-  const [startedAt] = useState(() => Date.now());
-  const [elapsed, setElapsed] = useState(0);
+
+  // Per-section timer state
+  // sectionTimeRemaining[sectionId] = seconds remaining for that section
+  const [sectionTimeRemaining, setSectionTimeRemaining] = useState<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    sections.forEach(s => {
+      m[s.id] = (s.time_minutes ?? DEFAULT_SECTION_MINUTES) * 60;
+    });
+    return m;
+  });
+
+  // Track which sections are locked (completed / timed out)
+  const [lockedSections, setLockedSections] = useState<Set<string>>(() => new Set());
+
+  // Track whether each section's timer has started
+  const [sectionStarted, setSectionStarted] = useState<Set<string>>(() => new Set([sections[0]?.id]));
+
+  // Global elapsed time
+  const [globalStartedAt] = useState(() => Date.now());
+  const [globalElapsed, setGlobalElapsed] = useState(0);
+
+  // Confirmation dialogs
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showSectionAdvanceConfirm, setShowSectionAdvanceConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Total time: 2 minutes per question
-  const totalQs = sections.reduce((a, s) => a + s.questions.length, 0);
-  const totalSecs = 120 * totalQs;
-  const remaining = Math.max(0, totalSecs - elapsed);
-
-  useEffect(() => {
-    const id = setInterval(() => setElapsed(e => e + 1), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (remaining === 0) doSubmit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remaining]);
+  // Ref to avoid stale closures in auto-submit
+  const submittingRef = useRef(false);
+  const lockedSectionsRef = useRef(lockedSections);
+  lockedSectionsRef.current = lockedSections;
+  const sectionIdxRef = useRef(sectionIdx);
+  sectionIdxRef.current = sectionIdx;
 
   const sec = sections[sectionIdx];
   const q = sec?.questions[questionIdx];
+  const totalQs = sections.reduce((a, s) => a + s.questions.length, 0);
+
+  // Lock a section
+  const lockSection = useCallback((sectionId: string) => {
+    setLockedSections(prev => {
+      const next = new Set(prev);
+      next.add(sectionId);
+      return next;
+    });
+  }, []);
+
+  // Advance to the next unlocked section
+  const advanceToNextSection = useCallback((fromIdx: number) => {
+    const nextIdx = fromIdx + 1;
+    if (nextIdx < sections.length) {
+      setSectionIdx(nextIdx);
+      setQuestionIdx(0);
+      // Start the next section's timer if not already started
+      setSectionStarted(prev => {
+        const next = new Set(prev);
+        next.add(sections[nextIdx].id);
+        return next;
+      });
+    }
+  }, [sections]);
+
+  // Timer tick: decrement current section's time and track global elapsed
+  useEffect(() => {
+    const id = setInterval(() => {
+      setGlobalElapsed(Math.round((Date.now() - globalStartedAt) / 1000));
+
+      setSectionTimeRemaining(prev => {
+        const next = { ...prev };
+        // Only tick sections that have started and are not locked
+        for (const s of sections) {
+          if (lockedSectionsRef.current.has(s.id)) continue;
+          // Only tick the current section (active section)
+          if (s.id !== sections[sectionIdxRef.current]?.id) continue;
+          if (next[s.id] > 0) {
+            next[s.id] = next[s.id] - 1;
+          }
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [globalStartedAt, sections]);
+
+  // Watch for section timer expiry
+  useEffect(() => {
+    const currentSection = sections[sectionIdx];
+    if (!currentSection) return;
+    const remaining = sectionTimeRemaining[currentSection.id] ?? 0;
+
+    if (remaining <= 0 && !lockedSections.has(currentSection.id)) {
+      lockSection(currentSection.id);
+
+      // If this is the last section, auto-submit
+      if (sectionIdx === sections.length - 1) {
+        // Check if ALL sections are now locked
+        const allLocked = sections.every(s => s.id === currentSection.id || lockedSections.has(s.id));
+        if (allLocked) {
+          doSubmit();
+        }
+      } else {
+        advanceToNextSection(sectionIdx);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionTimeRemaining, sectionIdx]);
+
+  // Check if all sections are locked -> auto-submit
+  useEffect(() => {
+    if (sections.length > 0 && sections.every(s => lockedSections.has(s.id))) {
+      doSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lockedSections]);
+
+  const isSectionLocked = (sectionId: string) => lockedSections.has(sectionId);
+  const isCurrentSectionLocked = isSectionLocked(sec?.id);
 
   const pick = (optIdx: number) => {
+    if (isCurrentSectionLocked) return;
     setAnswers(prev => {
       const copy = { ...prev };
       const arr = [...copy[sec.id]];
@@ -74,22 +172,36 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
     if (questionIdx < sec.questions.length - 1) {
       setQuestionIdx(qi => qi + 1);
     } else if (sectionIdx < sections.length - 1) {
-      setSectionIdx(si => si + 1);
-      setQuestionIdx(0);
+      // Moving to next section - show confirmation if time remains
+      const remaining = sectionTimeRemaining[sec.id] ?? 0;
+      if (remaining > 0 && !isSectionLocked(sec.id)) {
+        setShowSectionAdvanceConfirm(true);
+      } else {
+        confirmAdvanceSection();
+      }
     }
+  };
+
+  const confirmAdvanceSection = () => {
+    setShowSectionAdvanceConfirm(false);
+    // Lock the current section
+    lockSection(sec.id);
+    advanceToNextSection(sectionIdx);
   };
 
   const goPrev = () => {
     if (questionIdx > 0) {
       setQuestionIdx(qi => qi - 1);
-    } else if (sectionIdx > 0) {
-      setSectionIdx(si => si - 1);
-      setQuestionIdx(sections[sectionIdx - 1].questions.length - 1);
     }
+    // Cannot go back to previous sections
   };
 
   const goToSection = (si: number) => {
-    setSectionIdx(si);
+    const targetSection = sections[si];
+    // Can only navigate to the current section (clicking its tab to jump to q0)
+    // Cannot go to locked sections or future sections
+    if (isSectionLocked(targetSection.id)) return;
+    if (si !== sectionIdx) return; // Only allow clicking current section tab
     setQuestionIdx(0);
   };
 
@@ -97,7 +209,14 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
     return Object.values(answers).reduce((a, arr) => a + arr.filter(v => v !== null).length, 0);
   }, [answers]);
 
-  const doSubmit = () => {
+  const sectionAnsweredCount = (sectionId: string) => {
+    return (answers[sectionId] || []).filter(v => v !== null).length;
+  };
+
+  const doSubmit = useCallback(() => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
     const sectionAnswers: Record<string, Array<{ question_index: number; selected: number | null }>> = {};
     for (const s of sections) {
       sectionAnswers[s.id] = (answers[s.id] || []).map((sel, qi) => ({
@@ -107,20 +226,38 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
     }
     onSubmit({
       section_answers: sectionAnswers,
-      time_taken_secs: Math.round((Date.now() - startedAt) / 1000)
+      time_taken_secs: Math.round((Date.now() - globalStartedAt) / 1000)
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, sections, onSubmit, globalStartedAt]);
+
+  // Current section timer values
+  const currentSectionRemaining = sectionTimeRemaining[sec?.id] ?? 0;
+  const secMins = Math.floor(currentSectionRemaining / 60);
+  const secSecs = currentSectionRemaining % 60;
+  const lowTime = currentSectionRemaining < 120 && currentSectionRemaining > 0;
+
+  // Global elapsed display
+  const globalHrs = Math.floor(globalElapsed / 3600);
+  const globalMins = Math.floor((globalElapsed % 3600) / 60);
+  const globalSecs = globalElapsed % 60;
+
+  const isLastQuestion = sectionIdx === sections.length - 1 && questionIdx === sec.questions.length - 1;
+  const isLastSection = sectionIdx === sections.length - 1;
+
+  // Section progress
+  const sectionProgress = sec ? ((questionIdx + 1) / sec.questions.length) * 100 : 0;
+
+  const currentColor = SUBJECT_COLORS[sec?.subject] || '#f5b72f';
+
+  // Format time helper
+  const formatSectionTime = (sectionId: string) => {
+    const rem = sectionTimeRemaining[sectionId] ?? 0;
+    if (lockedSections.has(sectionId)) return 'Locked';
+    const m = Math.floor(rem / 60);
+    const s = rem % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
-
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const lowTime = remaining < 120;
-  const isLast = sectionIdx === sections.length - 1 && questionIdx === sec.questions.length - 1;
-
-  // Overall progress
-  let qsBefore = 0;
-  for (let i = 0; i < sectionIdx; i++) qsBefore += sections[i].questions.length;
-  const globalQ = qsBefore + questionIdx + 1;
-  const progress = (globalQ / totalQs) * 100;
 
   return (
     <div className="fixed inset-0 z-50 bg-[#080d1a] overflow-y-auto">
@@ -137,47 +274,84 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
                 <ChevronLeft className="w-4 h-4" /> Exit
               </button>
               <span className="font-serif text-base font-semibold truncate">{title}</span>
+              {/* Section timer - main display */}
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-mono text-sm ${
                 lowTime ? 'border-red-400/50 bg-red-400/10 text-red-300 animate-pulse' : 'border-white/10 bg-white/5 text-ink-soft'
               }`}>
                 <Clock className="w-3.5 h-3.5" />
-                {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+                <span style={{ color: isCurrentSectionLocked ? '#666' : currentColor }}>
+                  {sec?.subject}
+                </span>
+                {' '}
+                {isCurrentSectionLocked
+                  ? <span className="text-ink-muted">Locked</span>
+                  : <>{String(secMins).padStart(2, '0')}:{String(secSecs).padStart(2, '0')}</>
+                }
               </div>
+            </div>
+
+            {/* Global summary bar */}
+            <div className="flex items-center justify-between text-[11px] text-ink-muted mb-2">
+              <span>Section {sectionIdx + 1} of {sections.length}</span>
+              <span>
+                Total elapsed: {globalHrs > 0 ? `${globalHrs}:` : ''}{String(globalMins).padStart(2, '0')}:{String(globalSecs).padStart(2, '0')}
+              </span>
             </div>
 
             {/* Section tabs */}
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {sections.map((s, si) => {
-                const secAnswered = (answers[s.id] || []).filter(v => v !== null).length;
+                const secAnswered = sectionAnsweredCount(s.id);
                 const secTotal = s.questions.length;
                 const isCurrent = si === sectionIdx;
+                const isLocked = isSectionLocked(s.id);
                 const color = SUBJECT_COLORS[s.subject] || '#f5b72f';
                 return (
                   <button
                     key={s.id}
                     onClick={() => goToSection(si)}
+                    disabled={isLocked || si !== sectionIdx}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs whitespace-nowrap border transition ${
-                      isCurrent
+                      isCurrent && !isLocked
                         ? 'border-white/20 bg-white/5'
-                        : 'border-transparent hover:bg-white/3'
+                        : isLocked
+                          ? 'border-transparent opacity-50 cursor-not-allowed'
+                          : 'border-transparent opacity-40 cursor-not-allowed'
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="font-medium">{s.topic_name}</span>
+                    {isLocked ? (
+                      <Lock className="w-3 h-3 text-ink-muted flex-shrink-0" />
+                    ) : (
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                    )}
+                    <span className={`font-medium ${isLocked ? 'text-ink-muted line-through' : ''}`}>
+                      {s.topic_name}
+                    </span>
                     <span className="text-ink-muted">{secAnswered}/{secTotal}</span>
-                    {secAnswered === secTotal && secTotal > 0 && <CheckCircle2 className="w-3 h-3 text-green-400" />}
+                    {!isLocked && sectionStarted.has(s.id) && (
+                      <span className={`font-mono text-[10px] ${
+                        (sectionTimeRemaining[s.id] ?? 0) < 120 && (sectionTimeRemaining[s.id] ?? 0) > 0
+                          ? 'text-red-400'
+                          : 'text-ink-muted'
+                      }`}>
+                        {formatSectionTime(s.id)}
+                      </span>
+                    )}
+                    {isLocked && secAnswered === secTotal && secTotal > 0 && (
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    )}
                   </button>
                 );
               })}
             </div>
 
-            {/* Progress bar */}
+            {/* Progress bar - section progress */}
             <div className="w-full h-1 rounded-full bg-white/5 mt-2 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${progress}%`,
-                  background: `linear-gradient(90deg, ${SUBJECT_COLORS[sec.subject] || '#ffd166'}, #f5b72f)`
+                  width: `${sectionProgress}%`,
+                  background: `linear-gradient(90deg, ${currentColor}, #f5b72f)`
                 }}
               />
             </div>
@@ -190,11 +364,16 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
             <div className="flex items-center gap-2 mb-4">
               <span
                 className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: `${SUBJECT_COLORS[sec.subject]}20`, color: SUBJECT_COLORS[sec.subject], border: `1px solid ${SUBJECT_COLORS[sec.subject]}40` }}
+                style={{ background: `${currentColor}20`, color: currentColor, border: `1px solid ${currentColor}40` }}
               >
                 {sec.subject}
               </span>
               <span className="text-xs text-ink-muted">{sec.topic_name}</span>
+              {isCurrentSectionLocked && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-red-400/10 text-red-300 border border-red-400/20 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Locked
+                </span>
+              )}
               <span className="text-xs text-ink-muted ml-auto">
                 Q{questionIdx + 1} of {sec.questions.length}
               </span>
@@ -211,10 +390,15 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
                   <button
                     key={i}
                     onClick={() => pick(i)}
+                    disabled={isCurrentSectionLocked}
                     className={`w-full text-left p-5 rounded-2xl border transition-all ${
-                      on
-                        ? 'border-gold/60 bg-gold-dim shadow-[0_0_30px_-5px_rgba(245,183,47,0.4)]'
-                        : 'border-white/8 bg-white/3 hover:border-white/20 hover:bg-white/5'
+                      isCurrentSectionLocked
+                        ? on
+                          ? 'border-gold/30 bg-gold-dim/50 opacity-70 cursor-not-allowed'
+                          : 'border-white/5 bg-white/2 opacity-50 cursor-not-allowed'
+                        : on
+                          ? 'border-gold/60 bg-gold-dim shadow-[0_0_30px_-5px_rgba(245,183,47,0.4)]'
+                          : 'border-white/8 bg-white/3 hover:border-white/20 hover:bg-white/5'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -234,21 +418,29 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
             <div className="mt-10 flex items-center justify-between gap-3">
               <button
                 onClick={goPrev}
-                disabled={sectionIdx === 0 && questionIdx === 0}
+                disabled={questionIdx === 0}
                 className="btn btn-ghost disabled:opacity-40 flex items-center gap-1"
               >
                 <ChevronLeft className="w-4 h-4" /> Previous
               </button>
 
-              {isLast ? (
+              {isLastQuestion ? (
                 <button
                   onClick={() => setShowConfirm(true)}
                   className="btn btn-gold flex items-center gap-1"
                 >
                   Submit Test
                 </button>
-              ) : (
+              ) : questionIdx === sec.questions.length - 1 && !isLastSection ? (
                 <button onClick={goNext} className="btn btn-gold flex items-center gap-1">
+                  Next Section <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={goNext}
+                  disabled={isCurrentSectionLocked && questionIdx === sec.questions.length - 1}
+                  className="btn btn-gold flex items-center gap-1"
+                >
                   Next <ChevronRight className="w-4 h-4" />
                 </button>
               )}
@@ -281,6 +473,43 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
         </div>
       </div>
 
+      {/* Section advance confirmation */}
+      {showSectionAdvanceConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-[#0c1424] border border-white/10 shadow-2xl p-6">
+            <h3 className="font-serif text-xl font-semibold mb-3">Move to next section?</h3>
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-300 text-sm mb-4">
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>
+                You have{' '}
+                <strong>
+                  {Math.floor((sectionTimeRemaining[sec.id] ?? 0) / 60)}:{String((sectionTimeRemaining[sec.id] ?? 0) % 60).padStart(2, '0')}
+                </strong>
+                {' '}remaining in <strong>{sec.subject}</strong>. Once you move to{' '}
+                <strong>{sections[sectionIdx + 1]?.subject}</strong>, you cannot return to this section.
+              </span>
+            </div>
+            <p className="text-ink-soft text-sm mb-6">
+              {sectionAnsweredCount(sec.id)}/{sec.questions.length} questions answered in this section.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowSectionAdvanceConfirm(false)}
+                className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition text-sm"
+              >
+                Stay Here
+              </button>
+              <button
+                onClick={confirmAdvanceSection}
+                className="btn btn-gold !py-2 !px-5 !text-sm"
+              >
+                Move to {sections[sectionIdx + 1]?.subject}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Submit confirmation */}
       {showConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -304,9 +533,10 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
               </button>
               <button
                 onClick={doSubmit}
-                className="btn btn-gold !py-2 !px-5 !text-sm"
+                disabled={submitting}
+                className="btn btn-gold !py-2 !px-5 !text-sm disabled:opacity-50"
               >
-                Submit Test
+                {submitting ? 'Submitting...' : 'Submit Test'}
               </button>
             </div>
           </div>

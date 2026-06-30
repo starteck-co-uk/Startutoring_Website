@@ -281,7 +281,7 @@ export const demoWeeklyTestStore = {
     monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
     monday.setHours(0, 0, 0, 0);
     return weeklyTestAttemptsStore.filter(a =>
-      a.student_id === studentId && new Date(a.started_at) >= monday
+      a.student_id === studentId && a.completed && new Date(a.started_at) >= monday
     );
   },
   insertAttempt(row: Partial<WeeklyTestAttempt>) {
