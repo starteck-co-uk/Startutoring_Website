@@ -81,7 +81,16 @@ IMPORTANT RULES:
 - Questions MUST match ${level} difficulty precisely per UK National Curriculum and GL Assessment standards
 - Each question must have exactly ONE defensible correct answer — no ambiguity
 - Options should include plausible distractors (common mistakes students make)
-- Order questions from easier to harder (progressive difficulty)`;
+- Order questions from easier to harder (progressive difficulty)
+
+CRITICAL DIFFICULTY GUIDANCE:
+- These are for Year 6 students (age 10-11) preparing for the 11+ entrance exam
+- Do NOT use secondary school (KS3/GCSE) level content
+- Maths: stick to KS2 curriculum — basic arithmetic, simple fractions, basic percentages, simple area/perimeter, reading data from charts. NO algebra with x/y variables, NO trigonometry, NO quadratic equations
+- English: use vocabulary appropriate for 10-11 year olds. NO literary analysis terms like "iambic pentameter" or "stream of consciousness"
+- VR: use words a Year 6 child would know. NO obscure or adult vocabulary
+- NVR: keep spatial reasoning simple — basic rotations, reflections, pattern completion. NO complex 3D transformations
+- If in doubt, make it EASIER rather than harder. The goal is to test reasoning, not to trick children with advanced content.`;
 
   return prompt;
 }

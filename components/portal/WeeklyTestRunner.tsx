@@ -31,19 +31,64 @@ const SUBJECT_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_SECTION_MINUTES = 50;
+const STORAGE_KEY = 'star_weekly_test_progress';
+
+interface SavedProgress {
+  testTitle: string;
+  sectionIdx: number;
+  questionIdx: number;
+  answers: Record<string, (number | null)[]>;
+  sectionTimeRemaining: Record<string, number>;
+  lockedSections: string[];
+  sectionStarted: string[];
+  globalStartedAt: number;
+}
+
+function loadProgress(testTitle: string, sections: TestSection[]): SavedProgress | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const saved: SavedProgress = JSON.parse(raw);
+    // Only restore if same test
+    if (saved.testTitle !== testTitle) return null;
+    // Validate section IDs match
+    const savedIds = Object.keys(saved.answers);
+    const currentIds = sections.map(s => s.id);
+    if (!currentIds.every(id => savedIds.includes(id))) return null;
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+function saveProgress(state: SavedProgress) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {}
+}
+
+function clearProgress() {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {}
+}
 
 export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: Props) {
-  const [sectionIdx, setSectionIdx] = useState(0);
-  const [questionIdx, setQuestionIdx] = useState(0);
+  // Try to restore saved progress
+  const saved = useMemo(() => loadProgress(title, sections), [title, sections]);
+
+  const [sectionIdx, setSectionIdx] = useState(saved?.sectionIdx ?? 0);
+  const [questionIdx, setQuestionIdx] = useState(saved?.questionIdx ?? 0);
   const [answers, setAnswers] = useState<Record<string, (number | null)[]>>(() => {
+    if (saved?.answers) return saved.answers;
     const m: Record<string, (number | null)[]> = {};
     sections.forEach(s => { m[s.id] = Array(s.questions.length).fill(null); });
     return m;
   });
 
   // Per-section timer state
-  // sectionTimeRemaining[sectionId] = seconds remaining for that section
   const [sectionTimeRemaining, setSectionTimeRemaining] = useState<Record<string, number>>(() => {
+    if (saved?.sectionTimeRemaining) return saved.sectionTimeRemaining;
     const m: Record<string, number> = {};
     sections.forEach(s => {
       m[s.id] = (s.time_minutes ?? DEFAULT_SECTION_MINUTES) * 60;
@@ -52,14 +97,32 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
   });
 
   // Track which sections are locked (completed / timed out)
-  const [lockedSections, setLockedSections] = useState<Set<string>>(() => new Set());
+  const [lockedSections, setLockedSections] = useState<Set<string>>(() =>
+    new Set(saved?.lockedSections ?? [])
+  );
 
   // Track whether each section's timer has started
-  const [sectionStarted, setSectionStarted] = useState<Set<string>>(() => new Set([sections[0]?.id]));
+  const [sectionStarted, setSectionStarted] = useState<Set<string>>(() =>
+    new Set(saved?.sectionStarted ?? [sections[0]?.id])
+  );
 
   // Global elapsed time
-  const [globalStartedAt] = useState(() => Date.now());
+  const [globalStartedAt] = useState(() => saved?.globalStartedAt ?? Date.now());
   const [globalElapsed, setGlobalElapsed] = useState(0);
+
+  // Persist progress to sessionStorage on every state change
+  useEffect(() => {
+    saveProgress({
+      testTitle: title,
+      sectionIdx,
+      questionIdx,
+      answers,
+      sectionTimeRemaining,
+      lockedSections: Array.from(lockedSections),
+      sectionStarted: Array.from(sectionStarted),
+      globalStartedAt
+    });
+  }, [title, sectionIdx, questionIdx, answers, sectionTimeRemaining, lockedSections, sectionStarted, globalStartedAt]);
 
   // Confirmation dialogs
   const [showConfirm, setShowConfirm] = useState(false);
@@ -217,6 +280,7 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
     if (submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
+    clearProgress(); // Clear saved progress on submit
     const sectionAnswers: Record<string, Array<{ question_index: number; selected: number | null }>> = {};
     for (const s of sections) {
       sectionAnswers[s.id] = (answers[s.id] || []).map((sel, qi) => ({
@@ -270,7 +334,14 @@ export default function WeeklyTestRunner({ title, sections, onExit, onSubmit }: 
         <div className="sticky top-0 z-10 backdrop-blur-xl bg-[rgba(8,13,26,0.8)] border-b border-white/5 px-5 py-3">
           <div className="container-xl">
             <div className="flex items-center justify-between gap-4 mb-3">
-              <button onClick={onExit} className="text-ink-soft hover:text-white text-sm flex items-center gap-1">
+              <button
+                onClick={() => {
+                  if (confirm('Your progress is saved. You can resume this test later. Leave now?')) {
+                    onExit();
+                  }
+                }}
+                className="text-ink-soft hover:text-white text-sm flex items-center gap-1"
+              >
                 <ChevronLeft className="w-4 h-4" /> Exit
               </button>
               <span className="font-serif text-base font-semibold truncate">{title}</span>

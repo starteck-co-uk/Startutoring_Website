@@ -145,6 +145,19 @@ export function usePortalUser(): PortalUser | null {
     } catch {
       router.replace('/portal/login');
     }
+
+    // Verify the auth cookie is still valid by pinging a protected endpoint
+    fetch('/api/student/profile?id=_ping')
+      .then(r => {
+        if (r.status === 401) {
+          // Cookie expired but localStorage persists — force re-login
+          localStorage.removeItem('star_user_parent');
+          localStorage.removeItem('star_user_admin');
+          localStorage.removeItem('star_user');
+          router.replace('/portal/login');
+        }
+      })
+      .catch(() => {});
   }, [router]);
   return user;
 }

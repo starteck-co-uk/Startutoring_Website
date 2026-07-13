@@ -645,7 +645,13 @@ export default function DashboardPage() {
                               onClick={() => startWeeklyTest(t.id, t.title)}
                               className="btn btn-gold !py-2 !px-5 !text-sm flex items-center gap-1"
                             >
-                              Start Test <ChevronRight className="w-4 h-4" />
+                              {(() => {
+                                try {
+                                  const saved = sessionStorage.getItem('star_weekly_test_progress');
+                                  if (saved && JSON.parse(saved).testTitle === t.title) return 'Resume Test';
+                                } catch {}
+                                return 'Start Test';
+                              })()} <ChevronRight className="w-4 h-4" />
                             </button>
                           ) : (
                             <div className="flex items-center gap-2 text-sm text-ink-muted">

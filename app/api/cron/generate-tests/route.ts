@@ -31,9 +31,16 @@ RULES:
 - Exactly 4 options per question, clearly distinct
 - "correct" is the 0-based index of the correct option
 - Explanations must show full working (2-3 sentences)
-- Year 6 difficulty (age 10-11)
 - Each question has exactly ONE correct answer
-- Progressive difficulty (easier to harder)`;
+- Progressive difficulty (easier to harder)
+
+CRITICAL: These are for Year 6 students (age 10-11) preparing for the 11+ entrance exam.
+- Stick to KS2 curriculum ONLY — NO secondary school content
+- Maths: basic arithmetic, simple fractions, basic percentages, simple area/perimeter. NO algebra with variables, NO trigonometry
+- English: age-appropriate vocabulary. NO literary analysis terms
+- VR: words a Year 6 child would know. NO obscure vocabulary
+- NVR: basic spatial reasoning. NO complex 3D transformations
+- When in doubt, make it EASIER. Test reasoning, not trick children.`;
 }
 
 async function generateSectionQuestions(
